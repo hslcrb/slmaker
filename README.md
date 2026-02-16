@@ -76,6 +76,37 @@ graph TD
     Data --> TXT["data/*.txt (Corpus)"]
     
     W --> BIN["*.bin (Disk-mapped weights)"]
+    
+    subgraph ERD ["Data Relationship (ERD)"]
+        Corpus["Corpus (.txt)"] -- "Tokens" --> Model["NanoSLM Model"]
+        Model -- "Read/Write" --> Weights["Weights (.bin / .pth)"]
+        Weights -- "Mmap" --> SSD["Hardware SSD"]
+    end
+```
+
+### 🛡️ 자가 치유 흐름도 / Auto-Healing System Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant UI as GUI/CLI Interface
+    participant Model as model.py (Weight Check)
+    participant Train as train.py (Auto-Retrain)
+    participant Gen as engine_inference
+    
+    User->>UI: Trigger Inference (Generation)
+    UI->>Model: check_weights_complete()
+    alt Weights Exist
+        Model-->>UI: OK
+        UI->>Gen: Start Generation
+    else Weights Missing
+        Model-->>UI: Missing Shards
+        UI->>User: Show "SYSTEM: Auto-Retraining..."
+        UI->>Train: Start engine_train()
+        Train-->>UI: Training Complete & Weights Saved
+        UI->>Gen: Resume original inference request
+    end
+    Gen-->>User: Return Generated Text
 ```
 
 ### 📁 주요 구성 요소 설명 / Component Overview
@@ -86,6 +117,34 @@ graph TD
 - **`data/weights/`**: **Odyssey (1.2B) 모델 가중치**. `np.memmap`을 통해 SSD에 직접 매핑되어 RAM 점유를 최소화합니다.
 
 ---
+
+---
+
+## 📖 사용 설명서 / Usage Manual
+
+### 1. CLI 엔진 레퍼런스 / CLI Engine Reference
+`run_cli.sh`를 통해 실행하며, 다양한 명령행 인자를 지원합니다. / Run via `run_cli.sh` with various command-line arguments.
+
+| Command / Argument | Description                   | Example                          |
+| :----------------- | :---------------------------- | :------------------------------- |
+| `mode`             | `train` 또는 `inference` 선택 | `./run_cli.sh inference`         |
+| `prompt`           | 추론 모드에서 사용할 텍스트   | `./run_cli.sh inference "Hello"` |
+| `--model`          | `Monster` 또는 `Odyssey` 선택 | `--model Monster`                |
+| `--tokens`         | 생성할 최대 토큰 수           | `--tokens 200`                   |
+
+**Example**:
+```bash
+# Monster 모델로 'Once upon a time' 추론 시동
+python3 cli.py inference "Once upon a time" --model Monster --tokens 50
+```
+
+### 2. GUI 대시보드 매뉴얼 / GUI Dashboard Manual
+`run.sh`를 통해 실행하며, 전문적인 텔레메트리를 제공합니다. / Run via `run.sh`, providing professional telemetry.
+
+- **📊 METRICS 탭**: 도표와 그래프를 통해 실시간 학습 손실(Loss) 및 성능 지표를 모니터링합니다.
+- **📟 INFERENCE 탭**: 텍스트를 입력하고 모델의 실시간 생성 결과를 확인합니다.
+- **⚙️ Active Model Selector**: 드롭다운을 통해 엔진을 즉시 전환할 수 있습니다.
+- **🛡️ Auto-Healing**: 가중치가 없을 때 추론을 누르면 하단 로그에 경고가 뜨고 자동으로 복구가 시작됩니다.
 
 ---
 
