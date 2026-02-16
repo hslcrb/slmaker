@@ -129,7 +129,7 @@ class NanoSLMGUI:
         self.canvas = FigureCanvasTkAgg(self.fig, master=right_panel)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
-        self.info_label = ttk.Label(right_panel, text="Nano-SLM v0.6.0 Propulsion | Params: ~1.2B | Logic: Prefetch+Caching+LoRA", 
+        self.info_label = ttk.Label(right_panel, text="Nano-SLM v0.7.0 Dual-Interface | Params: ~1.2B | Logic: Dual-Mode+Odyssey", 
 style="TLabel")
         self.info_label.pack(pady=(10, 0)) # Pack the new info label
         

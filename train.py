@@ -29,14 +29,14 @@ class StreamingDataLoader:
         y = torch.stack([self.data[i+1:i+block_size+1] for i in ix])
         return x.to(device), y.to(device)
 
-def engine_train(gui_app=None):
+def engine_train(app=None):
     torch.set_num_threads(os.cpu_count())
     if hasattr(torch, 'set_float32_matmul_precision'):
         torch.set_float32_matmul_precision('high')
     
     # Path selection for Insane Upgrade / 고도화된 경로 선택
     data_path = 'data/tinystories.txt' if os.path.exists('data/tinystories.txt') else 'data/sample.txt'
-    if gui_app: gui_app.log(f"Loading dataset: {data_path}")
+    if app: app.log(f"Loading dataset: {data_path}")
 
     with open(data_path, 'r', encoding='utf-8') as f:
         text = f.read()
@@ -51,7 +51,7 @@ def engine_train(gui_app=None):
     # Mathematical Acceleration / 수학적 가속
     try:
         model = torch.compile(model)
-        if gui_app: gui_app.log("Model JIT Compiled for Insane Speed.")
+        if app: app.log("Model JIT Compiled for Insane Speed.")
     except:
         pass
 
@@ -59,11 +59,11 @@ def engine_train(gui_app=None):
     trainable_params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(trainable_params, lr=learning_rate)
 
-    if gui_app: gui_app.log(f"Starting Training v0.6.0 (Params: ~1.2B, Propulsion: ON)")
+    if app: app.log(f"Starting Training v0.7.0 (Params: ~1.2B, Dual-Interface: ON)")
     
     start_time = time.time()
     for iter in range(max_iters):
-        if gui_app and not gui_app.is_training:
+        if app and not app.is_training:
             break
 
         xb, yb = train_loader.get_batch()
@@ -88,8 +88,8 @@ def engine_train(gui_app=None):
             elapsed = time.time() - start_time
             speed = (iter + 1) / elapsed
             tokens_per_sec = speed * batch_size * block_size
-            if gui_app:
-                gui_app.data_queue.put({
+            if app:
+                app.data_queue.put({
                     'iter': iter,
                     'loss': loss.item(),
                     'speed': speed,
@@ -97,28 +97,28 @@ def engine_train(gui_app=None):
                     'grad_norm': grad_norm
                 })
 
-        if iter % eval_interval == 0 and gui_app:
-            gui_app.log(f"Step {iter}: Loss {loss.item():.4f} | GN: {grad_norm:.2f}")
+        if iter % eval_interval == 0 and app:
+            app.log(f"Step {iter}: Loss {loss.item():.4f} | GN: {grad_norm:.2f}")
 
-    if gui_app:
-        gui_app.log("v0.6.0 Propulsion Training Complete. Exporting Triple Formats...")
+    if app:
+        app.log("v0.7.0 Dual-Interface Training Complete. Exporting Triple Formats...")
         
         # 1. Standard PyTorch .pth
-        torch.save(model.state_dict(), 'nano_slm_v6.pth')
+        torch.save(model.state_dict(), 'nano_slm_v7.pth')
         
         # 2. Secure Safetensors
         try:
             from safetensors.torch import save_file
-            save_file(model.state_dict(), 'nano_slm_v6.safetensors')
-            gui_app.log("Exported: nano_slm_v6.safetensors")
+            save_file(model.state_dict(), 'nano_slm_v7.safetensors')
+            app.log("Exported: nano_slm_v7.safetensors")
         except Exception as e:
-            gui_app.log(f"Safetensors Export Failed: {e}")
+            app.log(f"Safetensors Export Failed: {e}")
 
         # 3. CPU-Optimized GGUF
         try:
             from gguf import GGUFWriter
             import numpy as np
-            writer = GGUFWriter("nano_slm_v6.gguf", "nano-slm-v6")
+            writer = GGUFWriter("nano_slm_v7.gguf", "nano-slm-v7")
             # Map tensors to GGUF format
             state_dict = model.state_dict()
             for name, tensor in state_dict.items():
@@ -129,11 +129,11 @@ def engine_train(gui_app=None):
             writer.write_kv_data_to_file()
             writer.write_tensors_to_file()
             writer.close()
-            gui_app.log("Exported: nano_slm_v6.gguf")
+            app.log("Exported: nano_slm_v7.gguf")
         except Exception as e:
-            gui_app.log(f"GGUF Export Failed: {e}")
+            app.log(f"GGUF Export Failed: {e}")
 
-        gui_app.log("v0.6.0 Propulsion All Formats Exported Successfully.")
+        app.log("v0.7.0 Dual-Interface All Formats Exported Successfully.")
 
 if __name__ == "__main__":
     engine_train()
