@@ -59,7 +59,7 @@ def engine_train(app=None):
     trainable_params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(trainable_params, lr=learning_rate)
 
-    if app: app.log(f"Starting Training v0.7.0 (Params: ~1.2B, Dual-Interface: ON)")
+    if app: app.log(f"Starting slmaker v0.8.0: Odyssey (Params: ~1.2B)")
     
     start_time = time.time()
     for iter in range(max_iters):
@@ -101,16 +101,16 @@ def engine_train(app=None):
             app.log(f"Step {iter}: Loss {loss.item():.4f} | GN: {grad_norm:.2f}")
 
     if app:
-        app.log("v0.7.0 Dual-Interface Training Complete. Exporting Triple Formats...")
+        app.log("slmaker v0.8.0 Odyssey Training Complete. Exporting Triple Formats...")
         
         # 1. Standard PyTorch .pth
-        torch.save(model.state_dict(), 'nano_slm_v7.pth')
+        torch.save(model.state_dict(), 'slmaker_odyssey_v8.pth')
         
         # 2. Secure Safetensors
         try:
             from safetensors.torch import save_file
-            save_file(model.state_dict(), 'nano_slm_v7.safetensors')
-            app.log("Exported: nano_slm_v7.safetensors")
+            save_file(model.state_dict(), 'slmaker_odyssey_v8.safetensors')
+            app.log("Exported: slmaker_odyssey_v8.safetensors")
         except Exception as e:
             app.log(f"Safetensors Export Failed: {e}")
 
@@ -118,7 +118,7 @@ def engine_train(app=None):
         try:
             from gguf import GGUFWriter
             import numpy as np
-            writer = GGUFWriter("nano_slm_v7.gguf", "nano-slm-v7")
+            writer = GGUFWriter("slmaker_odyssey_v8.gguf", "slmaker-odyssey-v8")
             # Map tensors to GGUF format
             state_dict = model.state_dict()
             for name, tensor in state_dict.items():
@@ -129,11 +129,11 @@ def engine_train(app=None):
             writer.write_kv_data_to_file()
             writer.write_tensors_to_file()
             writer.close()
-            app.log("Exported: nano_slm_v7.gguf")
+            app.log("Exported: slmaker_odyssey_v8.gguf")
         except Exception as e:
             app.log(f"GGUF Export Failed: {e}")
 
-        app.log("v0.7.0 Dual-Interface All Formats Exported Successfully.")
+        app.log("slmaker v0.8.0 All Formats Exported Successfully.")
 
 if __name__ == "__main__":
     engine_train()

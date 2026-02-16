@@ -49,7 +49,7 @@ class NanoSLMCLI:
 
     def run(self):
         layout = self.make_layout()
-        layout["header"].update(Panel("🌌 [bold cyan]NANO-SLM TRAINING ENGINE v0.7.0 Odyssey[/bold cyan] | 1.2B Parameters", style="white"))
+        layout["header"].update(Panel("🌌 [bold cyan]slmaker v0.8.0: Odyssey[/bold cyan] | 1.2B Parameters | Dual-Interface", style="white"))
         layout["footer"].update(Panel("Press Ctrl+C to stop / Ctrl+C를 눌러 중지", style="dim"))
         
         current_data = {}

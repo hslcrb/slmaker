@@ -13,7 +13,7 @@ import os
 class NanoSLMGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Nano-SLM Professional Dashboard / 나노 SLM 프로페셔널 대시보드")
+        self.root.title("slmaker Engine v0.8.0 | Dual-Interface")
         self.root.geometry("1100x800")
         self.root.configure(bg='#1e1e1e')
         
@@ -129,7 +129,7 @@ class NanoSLMGUI:
         self.canvas = FigureCanvasTkAgg(self.fig, master=right_panel)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
-        self.info_label = ttk.Label(right_panel, text="Nano-SLM v0.7.0 Dual-Interface | Params: ~1.2B | Logic: Dual-Mode+Odyssey", 
+        self.info_label = ttk.Label(right_panel, text="slmaker v0.8.0 (Odyssey) | Params: ~1.2B | Dual-Interface Ready", 
 style="TLabel")
         self.info_label.pack(pady=(10, 0)) # Pack the new info label
         
