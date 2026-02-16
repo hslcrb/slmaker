@@ -52,25 +52,32 @@ class NanoSLMGUI:
         specs_group = tk.LabelFrame(left_panel, text=" SYSTEM SPECS / 시스템 사양 ", bg='#1e1e1e', fg='#00ffcc', font=("Inter", 10, "bold"))
         specs_group.pack(fill=tk.X, pady=10)
         
-        from model import MODEL_TYPE
+        from model import MONSTER, ODYSSEY, CURRENT_MODEL, set_model_type, check_weights_complete
+        
+        row_model = ttk.Frame(specs_group)
+        row_model.pack(fill=tk.X, padx=5, pady=2)
+        ttk.Label(row_model, text="Active Model:", width=15).pack(side=tk.LEFT)
+        self.model_var = tk.StringVar(value=CURRENT_MODEL)
+        self.model_combo = ttk.Combobox(row_model, textvariable=self.model_var, values=[MONSTER, ODYSSEY], state="readonly")
+        self.model_combo.pack(side=tk.RIGHT, fill=tk.X, expand=True)
+        self.model_combo.bind("<<ComboboxSelected>>", self._on_model_change)
+
+        self.spec_labels = {}
         specs = [
             ("Target Device:", "CPU (Optimized)"),
             ("Memory Limit:", "4GB RAM"),
-            ("Active Model:", f"{MODEL_TYPE} ({'Lite' if MODEL_TYPE == 'Monster' else 'Pro'})"),
             ("Architecture:", "Transformer + LoRA"),
             ("Embed Dim:", str(n_embd)),
             ("Heads/Layers:", f"{n_head} / {n_layer}")
         ]
         
-        for label, val in specs:
+        for label_text, val in specs:
             row = ttk.Frame(specs_group)
             row.pack(fill=tk.X, padx=5, pady=2)
-            ttk.Label(row, text=label, width=15).pack(side=tk.LEFT)
-            # Display field: Read-only visual field / 장식용 읽기 전용 필드
-            entry = tk.Entry(row, bg='#2d2d2d', fg='#ffffff', borderwidth=0, highlightthickness=0)
-            entry.insert(0, val)
-            entry.config(state='readonly', readonlybackground='#2d2d2d')
-            entry.pack(side=tk.RIGHT, fill=tk.X, expand=True)
+            ttk.Label(row, text=label_text, width=15).pack(side=tk.LEFT)
+            lbl = ttk.Label(row, text=val, foreground="#ffffff")
+            lbl.pack(side=tk.RIGHT)
+            self.spec_labels[label_text] = lbl
 
         # Real-time Metrics / 실시간 지표
         metrics_group = tk.LabelFrame(left_panel, text=" LIVE METRICS / 실시간 지표 ", bg='#1e1e1e', fg='#00ffcc', font=("Inter", 10, "bold"))
@@ -249,9 +256,28 @@ style="TLabel")
         self.notebook.select(self.train_tab)
         threading.Thread(target=self.run_engine, daemon=True).start()
 
+    def _on_model_change(self, event=None):
+        from model import set_model_type, get_model_config
+        new_model = self.model_var.get()
+        set_model_type(new_model)
+        emb, hd, lyr = get_model_config()
+        self.spec_labels["Embed Dim:"].config(text=str(emb))
+        self.spec_labels["Heads/Layers:"].config(text=f"{hd} / {lyr}")
+        self.log(f"Model switched to {new_model}. / 모델이 {new_model}로 변경되었습니다.")
+        self.info_label.config(text=f"slmaker v1.0.0 ({new_model}) | Full Training & Inference | Dual-Interface")
+
     def start_inference(self):
+        from model import check_weights_complete, CURRENT_MODEL
         prompt = self.prompt_entry.get("1.0", tk.END).strip()
         max_tokens = int(self.token_var.get())
+        
+        if not check_weights_complete():
+            self.log(f"⚠️ SYSTEM: Missing weights for {CURRENT_MODEL}. Auto-retraining before inference...")
+            self.log("⚠️ 시스템: 가중치 누락됨. 추론 전 자동 재학습을 시작합니다.")
+            self._chain_inference = (prompt, max_tokens) # Store for after training
+            self.start_training()
+            return
+
         self.gen_btn.config(state=tk.DISABLED)
         self.log(f"Inference Started: '{prompt[:20]}...'")
         threading.Thread(target=self.run_inference, args=(prompt, max_tokens), daemon=True).start()

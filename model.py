@@ -13,23 +13,37 @@ device = 'cpu'
 eval_iters = 200
 dropout = 0.1
 
-# Model Lineup Selection / 모델 라인업 선택
-# 'Monster': 4.5M Lite (RAM-only target)
-# 'Odyssey': 1.2B Pro (SSD-mapped, LoRA target)
-MODEL_TYPE = 'Odyssey' 
+# Model Lineup Constants / 모델 라인업 상수
+MONSTER = 'Monster'
+ODYSSEY = 'Odyssey'
+CURRENT_MODEL = ODYSSEY # Default
 
-if MODEL_TYPE == 'Monster':
-    # 🚀 Monster Config (v0.3.0/v1.0-Lite)
-    # 4.5M parameters, extremely fast on any CPU.
-    n_embd = 384
-    n_head = 6
-    n_layer = 6
-else:
-    # 🌌 Odyssey Config (v1.0-Pro)
-    # 1.2B parameters, utilizes SSD-mapping and RoPE/RMSNorm.
-    n_embd = 2048 
-    n_head = 16   
-    n_layer = 24  
+def set_model_type(model_type):
+    global CURRENT_MODEL, n_embd, n_head, n_layer
+    CURRENT_MODEL = model_type
+    if model_type == MONSTER:
+        n_embd, n_head, n_layer = 384, 6, 6
+    else:
+        n_embd, n_head, n_layer = 2048, 16, 24
+
+def get_model_config():
+    if CURRENT_MODEL == MONSTER:
+        return 384, 6, 6
+    return 2048, 16, 24
+
+# Initial call / 초기 설정
+n_embd, n_head, n_layer = get_model_config()
+
+def check_weights_complete():
+    """Verify if all required weight fragments exist for the current model / 현재 모델의 필수 가중치 조각들이 존재하는지 확인"""
+    if CURRENT_MODEL == MONSTER:
+        # Lite model usually uses a single .pth file or smaller shards, check the main one
+        return os.path.exists('slmaker_monster.pth') or os.path.exists('data/weights/lm_head.bin')
+    else:
+        # Odyssey Pro requires disk-mapped shards
+        required_shards = [f"data/weights/block_{i}_attn_c_attn.bin" for i in range(n_layer)]
+        required_shards.append("data/weights/lm_head.bin")
+        return all(os.path.exists(s) for s in required_shards)
 
 import numpy as np
 import os
@@ -109,14 +123,16 @@ def apply_rotary_emb(xq, xk, freqs_cis):
 class CausalSelfAttention(nn.Module):
     def __init__(self, block_idx):
         super().__init__()
-        assert n_embd % n_head == 0
+        # Use locally scoped config to avoid state issues during mid-run changes
+        curr_n_embd, curr_n_head, _ = get_model_config()
+        assert curr_n_embd % curr_n_head == 0
         path_attn = f"data/weights/block_{block_idx}_attn_c_attn.bin"
         path_proj = f"data/weights/block_{block_idx}_attn_c_proj.bin"
         
-        self.c_attn = MmapLinear(n_embd, 3 * n_embd, mmap_path=path_attn)
-        self.c_proj = MmapLinear(n_embd, n_embd, mmap_path=path_proj)
-        self.n_head = n_head
-        self.n_embd = n_embd
+        self.c_attn = MmapLinear(curr_n_embd, 3 * curr_n_embd, mmap_path=path_attn)
+        self.c_proj = MmapLinear(curr_n_embd, curr_n_embd, mmap_path=path_proj)
+        self.n_head = curr_n_head
+        self.n_embd = curr_n_embd
         
         # KV Cache containers / KV 캐시 컨테이너
         self.cache_k = None

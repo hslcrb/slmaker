@@ -61,9 +61,18 @@ class NanoSLMCLI:
         return table
 
     def run_inference(self, prompt, max_tokens=100):
-        from train import engine_inference
+        from train import engine_inference, engine_train
+        from model import check_weights_complete, CURRENT_MODEL
+        
+        if not check_weights_complete():
+            console.print(Panel(f"⚠️ [bold yellow]SYSTEM: Missing weights for {CURRENT_MODEL}.[/]\n[bold green]Auto-retraining before inference...[/]", border_style="red"))
+            self.is_training = True
+            engine_train(self)
+            # engine_train blocks, so we resume after completion
+            console.print(Panel("[bold green]Weights healed. Starting inference...[/]", border_style="green"))
+
         self.make_layout() # Refresh layout
-        console.print(Panel(f"🌌 [bold cyan]ODYSSEY INFERENCE ENGINE[/]\nPrompt: [italic]{prompt}[/]", border_style="blue"))
+        console.print(Panel(f"🌌 [bold cyan]{CURRENT_MODEL.upper()} INFERENCE ENGINE[/]\nPrompt: [italic]{prompt}[/]", border_style="blue"))
         
         with console.status("[bold green]Generating propulsion...[/]"):
             result = engine_inference(prompt, max_tokens, self)
@@ -76,8 +85,9 @@ class NanoSLMCLI:
             return
 
         layout = self.make_layout()
-        layout["header"].update(Panel("🌌 [bold white on blue] NANO-SLM TRAINING ENGINE v1.0 [/][bold cyan] slmaker v1.0.0: Odyssey [/]", style="white", border_style="cyan"))
-        layout["footer"].update(Panel("Press [bold red]Ctrl+C[/] to stop safely / [bold yellow]Odyssey propulsion active[/]", border_style="dim"))
+        from model import CURRENT_MODEL
+        layout["header"].update(Panel(f"🌌 [bold white on blue] NANO-SLM TRAINING ENGINE v1.0 [/][bold cyan] slmaker v1.0.0: {CURRENT_MODEL} [/]", style="white", border_style="cyan"))
+        layout["footer"].update(Panel(f"Press [bold red]Ctrl+C[/] to stop safely / [bold yellow]{CURRENT_MODEL} propulsion active[/]", border_style="dim"))
         
         current_data = {}
         
@@ -114,10 +124,21 @@ class NanoSLMCLI:
 
 if __name__ == "__main__":
     import sys
+    import argparse
+    from model import set_model_type, MONSTER, ODYSSEY
+
+    parser = argparse.ArgumentParser(description="slmaker v1.0 Engine")
+    parser.add_argument("mode", nargs="?", default="train", choices=["train", "inference"])
+    parser.add_argument("prompt", nargs="?", default="Once upon a time")
+    parser.add_argument("--tokens", type=int, default=100)
+    parser.add_argument("--model", default=ODYSSEY, choices=[MONSTER, ODYSSEY])
+    
+    args = parser.parse_args()
+    
+    set_model_type(args.model)
     app = NanoSLMCLI()
-    if len(sys.argv) > 1 and sys.argv[1] == "inference":
-        prompt = sys.argv[2] if len(sys.argv) > 2 else "Once upon a time"
-        max_tokens = int(sys.argv[3]) if len(sys.argv) > 3 else 100
-        app.run(mode="inference", prompt=prompt, max_tokens=max_tokens)
+    
+    if args.mode == "inference":
+        app.run(mode="inference", prompt=args.prompt, max_tokens=args.tokens)
     else:
         app.run(mode="train")

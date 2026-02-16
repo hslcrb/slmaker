@@ -133,6 +133,13 @@ def engine_train(app=None):
             app.log(f"GGUF Export Failed: {e}")
 
         app.log("slmaker v0.8.0 All Formats Exported Successfully.")
+        
+        # Auto-Healing: Chain inference if it was requested / 자가 치유: 요청된 경우 추론 연결
+        if hasattr(app, '_chain_inference') and app._chain_inference:
+            prompt, max_tokens = app._chain_inference
+            app._chain_inference = None # Clear
+            app.log(f"Auto-Heal: Resuming inference for '{prompt[:20]}...'")
+            threading.Thread(target=app.run_inference, args=(prompt, max_tokens), daemon=True).start()
 
 def engine_inference(prompt, max_tokens=100, app=None):
     """
