@@ -5,7 +5,11 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Status](https://img.shields.io/badge/Build-Public-brightgreen)](https://github.com/hslcrb/slmaker)
 
-**Nano-SLM Professional**은 저사양 하드웨어(CPU, 4GB RAM)에서 미친 듯한 속도와 효율성을 증명하기 위해 설계된 초소형 언어 모델 프로젝트입니다. / **Nano-SLM Professional** is a compact language model project designed to prove extreme speed and efficiency on low-end hardware (CPU, 4GB RAM).
+**# 🌌 Nano-SLM: Odyssey (v0.5.0)
+### 4GB RAM에서 1.2B 파라미터의 벽을 허물다 / Breaking the 1.2B Parameter Barrier on 4GB RAM
+
+**Nano-SLM**은 극도로 제한된 하드웨어 환경(4GB RAM, CPU-only)에서 거대 언어 모델(LLM)을 학습하고 구동하기 위한 극한의 엔지니어링 프로젝트입니다. / **Nano-SLM** is an extreme engineering project aimed at training and running Large Language Models (LLMs) in ultra-constrained hardware environments (4GB RAM, CPU-only).
+d efficiency on low-end hardware (CPU, 4GB RAM).
 
 ---
 

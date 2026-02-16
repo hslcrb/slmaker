@@ -11,12 +11,14 @@ eval_interval = 500
 learning_rate = 3e-4
 device = 'cpu'
 eval_iters = 200
-# Odyssey Config for 1B-Monster (v0.5.0) / v0.5.0 1B-몬스터용 오디세이 설정
-n_embd = 2048 # Scaled from 192 (v0.3.0)
-n_head = 16   # Scaled from 6
-n_layer = 24  # Scaled from 8
+# Odyssey Config for 1B-Monster (v0.5.0)
+# 이 설정은 약 12억(1.2B) 개의 파라미터를 생성하며, SSD 매핑 없이는 4GB RAM에서 구동이 불가능합니다.
+# This config generates ~1.2B parameters, which cannot run on 4GB RAM without SSD-mapping.
+n_embd = 2048 
+n_head = 16   
+n_layer = 24  
 dropout = 0.1
-# Total Params: ~1.2B
+# Total Params: ~1,250,000,000 (1.25B)
 
 import numpy as np
 import os
