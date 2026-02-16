@@ -1,7 +1,12 @@
 venv/
+new_venv/
 __pycache__/
 *.pth
 .agent/
 brain/
 recycle_trash/
 *.pyc
+data/
+# Ignore any other virtual environments
+.venv/
+env/
