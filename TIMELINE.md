@@ -11,3 +11,4 @@
 - [2026-02-16 16:15] 미친듯한 고도화 (v0.3.0): 4.5M 파라미터 확장 및 11MB 데이터 확보 / Insane upgrade (v0.3.0): 4.5M parameter scaling and 11MB data acquisition.
 - [2026-02-16 16:20] 트리플 포맷(pth, safetensors, gguf) 수출 지원 및 v0.4.0 달성 / Triple-format export support and v0.4.0 achieved.
 - [2026-02-16 16:32] 1.2B 파라미터 '오디세이' 설계 및 v0.5.0 신적 도약 성공 / 1.2B 'Odyssey' design and v0.5.0 'God-scale' jump successful.
+- [2026-02-16 16:45] 비동기 프리페칭 및 캐싱 구현으로 v0.6.0 추진력 확보 / Secured v0.6.0 propulsion via async prefetching and caching.

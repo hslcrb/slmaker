@@ -129,9 +129,11 @@ class NanoSLMGUI:
         self.canvas = FigureCanvasTkAgg(self.fig, master=right_panel)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
+        self.info_label = ttk.Label(right_panel, text="Nano-SLM v0.6.0 Propulsion | Params: ~1.2B | Logic: Prefetch+Caching+LoRA", 
+style="TLabel")
+        self.info_label.pack(pady=(10, 0)) # Pack the new info label
+        
         log_label = ttk.Label(right_panel, text="Training Logs / 학습 로그", style="TLabel")
-        log_label.pack(pady=(10, 0))
-        self.log_area = scrolledtext.ScrolledText(right_panel, height=10, bg='#000000', fg='#ffffff', font=("Consolas", 9))
         log_label.pack(pady=(10, 0))
         self.log_area = scrolledtext.ScrolledText(right_panel, height=10, bg='#000000', fg='#ffffff', font=("Consolas", 9))
         self.log_area.pack(fill=tk.BOTH, expand=True, pady=5)

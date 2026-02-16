@@ -59,7 +59,7 @@ def engine_train(gui_app=None):
     trainable_params = [p for p in model.parameters() if p.requires_grad]
     optimizer = torch.optim.AdamW(trainable_params, lr=learning_rate)
 
-    if gui_app: gui_app.log(f"Starting Training v0.5.0 (Params: ~1.2B, Trainable: LoRA-Only)")
+    if gui_app: gui_app.log(f"Starting Training v0.6.0 (Params: ~1.2B, Propulsion: ON)")
     
     start_time = time.time()
     for iter in range(max_iters):
@@ -101,16 +101,16 @@ def engine_train(gui_app=None):
             gui_app.log(f"Step {iter}: Loss {loss.item():.4f} | GN: {grad_norm:.2f}")
 
     if gui_app:
-        gui_app.log("v0.5.0 Odyssey Training Complete. Exporting Triple Formats...")
+        gui_app.log("v0.6.0 Propulsion Training Complete. Exporting Triple Formats...")
         
         # 1. Standard PyTorch .pth
-        torch.save(model.state_dict(), 'nano_slm_v5.pth')
+        torch.save(model.state_dict(), 'nano_slm_v6.pth')
         
         # 2. Secure Safetensors
         try:
             from safetensors.torch import save_file
-            save_file(model.state_dict(), 'nano_slm_v5.safetensors')
-            gui_app.log("Exported: nano_slm_v5.safetensors")
+            save_file(model.state_dict(), 'nano_slm_v6.safetensors')
+            gui_app.log("Exported: nano_slm_v6.safetensors")
         except Exception as e:
             gui_app.log(f"Safetensors Export Failed: {e}")
 
@@ -118,7 +118,7 @@ def engine_train(gui_app=None):
         try:
             from gguf import GGUFWriter
             import numpy as np
-            writer = GGUFWriter("nano_slm_v5.gguf", "nano-slm-v5")
+            writer = GGUFWriter("nano_slm_v6.gguf", "nano-slm-v6")
             # Map tensors to GGUF format
             state_dict = model.state_dict()
             for name, tensor in state_dict.items():
@@ -129,11 +129,11 @@ def engine_train(gui_app=None):
             writer.write_kv_data_to_file()
             writer.write_tensors_to_file()
             writer.close()
-            gui_app.log("Exported: nano_slm_v5.gguf")
+            gui_app.log("Exported: nano_slm_v6.gguf")
         except Exception as e:
             gui_app.log(f"GGUF Export Failed: {e}")
 
-        gui_app.log("v0.5.0 Odyssey All Formats Exported Successfully.")
+        gui_app.log("v0.6.0 Propulsion All Formats Exported Successfully.")
 
 if __name__ == "__main__":
     engine_train()

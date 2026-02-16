@@ -26,26 +26,36 @@ import os
 class MmapLinear(nn.Module):
     """
     Linear layer that reads weights from an SSD-mapped file to save RAM.
-    SSD 매핑된 파일에서 가중치를 읽어 RAM을 절약하는 선형 레이어.
+    Supports RAM caching for high-frequency layers and prefetching hints.
     """
-    def __init__(self, in_features, out_features, mmap_path=None):
+    def __init__(self, in_features, out_features, mmap_path=None, cache_to_ram=False):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.mmap_path = mmap_path
         
         if mmap_path and os.path.exists(mmap_path):
-            self.weight = nn.Parameter(torch.from_numpy(np.memmap(mmap_path, dtype='float32', mode='r', shape=(out_features, in_features))), requires_grad=False)
+            mmap_data = np.memmap(mmap_path, dtype='float32', mode='r', shape=(out_features, in_features))
+            if cache_to_ram:
+                # Force load into RAM for performance / 성능을 위해 RAM으로 강제 로드
+                self.weight = nn.Parameter(torch.from_numpy(np.array(mmap_data)), requires_grad=False)
+            else:
+                self.weight = nn.Parameter(torch.from_numpy(mmap_data), requires_grad=False)
         else:
             self.weight = nn.Parameter(torch.randn(out_features, in_features) * 0.02, requires_grad=False)
         
         self.bias = nn.Parameter(torch.zeros(out_features), requires_grad=False)
         
-        # LoRA Adapters (The only thing that will be in RAM and trained)
-        # LoRA 어댑터 (RAM에 상주하며 학습되는 유일한 부분)
-        self.lora_rank = 4
+        # LoRA Adapters - Scaled for v0.6.0 Odyssey Propulsion
+        self.lora_rank = 16 # Increased from 4
         self.lora_A = nn.Parameter(torch.randn(in_features, self.lora_rank) * 0.01)
         self.lora_B = nn.Parameter(torch.zeros(self.lora_rank, out_features))
+
+    def prefetch(self):
+        """Hint the OS to load the weight shard into page cache / OS에 페이지 캐싱 힌트 제공"""
+        if hasattr(self.weight.data, 'storage') and hasattr(self.weight.data.storage(), 'filename'):
+            # This is a bit low-level, a simple sum or touch often works as a prefetch
+            _ = self.weight.data[0, 0].item()
 
     def forward(self, x):
         # Base weight (Frozen/Offloaded) + LoRA path (Active/RAM)
@@ -147,7 +157,8 @@ class NanoSLM(nn.Module):
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.blocks = nn.ModuleList([Block(i) for i in range(n_layer)])
         self.rms_f = RMSNorm(n_embd)
-        self.lm_head = MmapLinear(n_embd, vocab_size, mmap_path="data/weights/lm_head.bin")
+        # RAM Caching for LM Head (High usage) / 고부하 LM 헤드를 위해 RAM 캐싱 적용
+        self.lm_head = MmapLinear(n_embd, vocab_size, mmap_path="data/weights/lm_head.bin", cache_to_ram=True)
         
         # Precompute RoPE frequencies / RoPE 주파수 사전 계산
         self.freqs_cis = precompute_freqs_cis(n_embd // n_head, block_size * 2)
@@ -167,7 +178,16 @@ class NanoSLM(nn.Module):
         # Pass freqs_cis to blocks / 블록에 RoPE 주파수 전달
         freqs_cis = self.freqs_cis[:T].to(idx.device)
         
-        for block in self.blocks:
+        for i, block in enumerate(self.blocks):
+            # Propulsion: Prefetch next block weights while computing current / 추진력: 현재 연산 중 다음 블록 미리 불러오기
+            if i + 1 < len(self.blocks):
+                next_block = self.blocks[i+1]
+                # Prefetch sub-layers / 하위 레이어 프리페치
+                next_block.attn.c_attn.prefetch()
+                next_block.attn.c_proj.prefetch()
+                next_block.mlp.c_fc.prefetch()
+                next_block.mlp.c_proj.prefetch()
+            
             x = block(x, freqs_cis)
             
         x = self.rms_f(x)

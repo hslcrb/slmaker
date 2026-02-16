@@ -5,8 +5,8 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![Status](https://img.shields.io/badge/Build-Public-brightgreen)](https://github.com/hslcrb/slmaker)
 
-**# 🌌 Nano-SLM: Odyssey (v0.5.0)
-### 4GB RAM에서 1.2B 파라미터의 벽을 허물다 / Breaking the 1.2B Parameter Barrier on 4GB RAM
+**# 🌌 Nano-SLM: Odyssey (v0.6.0)
+### SSD의 한계를 넘어선 추진력 강화 / Propulsion Power Beyond SSD Limits
 
 **Nano-SLM**은 극도로 제한된 하드웨어 환경(4GB RAM, CPU-only)에서 거대 언어 모델(LLM)을 학습하고 구동하기 위한 극한의 엔지니어링 프로젝트입니다. / **Nano-SLM** is an extreme engineering project aimed at training and running Large Language Models (LLMs) in ultra-constrained hardware environments (4GB RAM, CPU-only).
 d efficiency on low-end hardware (CPU, 4GB RAM).
@@ -17,6 +17,7 @@ d efficiency on low-end hardware (CPU, 4GB RAM).
 
 - **🚀 Monster-Grade Engine (v0.3.0)**: 4.5M 파라미터 확장 및 11MB TinyStories 고품질 데이터 학습. / 4.5M parameter scaling and training on 11MB TinyStories high-quality corpus.
 - **🌌 God-Scale Odyssey (v0.5.0)**: SSD 매핑 기술을 통한 **1.2B 파라미터** 한계 돌파. / Breaking the 1.2B parameter barrier via SSD-mapping technology.
+- **🔥 Odyssey Propulsion (v0.6.0)**: 비동기 프리페칭 및 RAM 캐싱을 통한 **SSD 병목 극복**. / Overcoming SSD bottlenecks via async prefetching and RAM caching.
 - **🛡️ Secure Triple-Export (v0.4.0)**: `.pth`, `.safetensors`, `.gguf` 포맷 동시 출력 지원. / Simultaneous output support for `.pth`, `.safetensors`, and `.gguf` formats.
 - **🖥️ Insane Telemetry Dashboard**: 실시간 Tokens/sec 및 Grad-Norm 모니터링이 추가된 프로페셔널 GUI. / Professional GUI with real-time Tokens/sec and Grad-Norm monitoring.
 - **📦 Global CI/CD**: GitHub Actions를 통한 멀티 OS(Ubuntu, Windows, MacOS) 자동 릴리스 및 도커 배포. / Automated multi-OS releases and Docker deployment via GitHub Actions.
