@@ -104,9 +104,16 @@ class NanoSLMGUI:
         self.stop_btn = tk.Button(left_panel, text="STOP", bg='#aa0000', fg='white', command=self.stop_training, state=tk.DISABLED)
         self.stop_btn.pack(fill=tk.X, pady=5)
 
-        # Right Panel: Graph and Log / 오른쪽 패널: 그래프 및 로그
+        # Right Panel: Tabs for Graph and Inference / 오른쪽 패널: 그래프 및 추론을 위한 탭
         right_panel = ttk.Frame(main_frame)
         right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10)
+        
+        self.notebook = ttk.Notebook(right_panel)
+        self.notebook.pack(fill=tk.BOTH, expand=True)
+        
+        # Tab 1: Training Dashboard / 탭 1: 학습 대시보드
+        self.train_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.train_tab, text=" TRAINING / 학습 ")
         
         # Graph / 그래프
         self.fig, self.ax = plt.subplots(figsize=(5, 3), dpi=100)
@@ -114,7 +121,6 @@ class NanoSLMGUI:
         self.ax.set_facecolor('#2d2d2d')
         self.ax.tick_params(colors='white')
         
-        # Safe font handling / 안전한 폰트 처리
         try:
             import matplotlib as mpl
             mpl.rcParams['font.family'] = 'sans-serif'
@@ -126,18 +132,53 @@ class NanoSLMGUI:
         self.loss_line, = self.ax.plot([], [], color='#00ffcc', linewidth=1.5, marker='o', markersize=2, alpha=0.8)
         self.ax.grid(True, linestyle='--', alpha=0.3, color='#444444')
         
-        self.canvas = FigureCanvasTkAgg(self.fig, master=right_panel)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.train_tab)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
-        self.info_label = ttk.Label(right_panel, text="slmaker v0.8.0 (Odyssey) | Params: ~1.2B | Dual-Interface Ready", 
-style="TLabel")
-        self.info_label.pack(pady=(10, 0)) # Pack the new info label
-        
-        log_label = ttk.Label(right_panel, text="Training Logs / 학습 로그", style="TLabel")
+        log_label = ttk.Label(self.train_tab, text="Training Logs / 학습 로그", style="TLabel")
         log_label.pack(pady=(10, 0))
-        self.log_area = scrolledtext.ScrolledText(right_panel, height=10, bg='#000000', fg='#ffffff', font=("Consolas", 9))
+        self.log_area = scrolledtext.ScrolledText(self.train_tab, height=10, bg='#000000', fg='#ffffff', font=("Consolas", 9))
         self.log_area.pack(fill=tk.BOTH, expand=True, pady=5)
         self.log_area.config(state=tk.DISABLED)
+
+        # Tab 2: Inference Engine / 탭 2: 추론 엔진
+        self.infer_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.infer_tab, text=" INFERENCE / 추론 ")
+        
+        infer_header = ttk.Label(self.infer_tab, text="⚡ ODYSSEY v1.0 GENERATION ENGINE", style="Header.TLabel")
+        infer_header.pack(pady=10)
+        
+        prompt_frame = ttk.Frame(self.infer_tab)
+        prompt_frame.pack(fill=tk.X, padx=20, pady=5)
+        
+        ttk.Label(prompt_frame, text="PROMPT / 프롬프트:").pack(anchor=tk.W)
+        self.prompt_entry = tk.Text(prompt_frame, height=4, bg='#2d2d2d', fg='#ffffff', insertbackground='white')
+        self.prompt_entry.pack(fill=tk.X, pady=5)
+        self.prompt_entry.insert(tk.END, "Once upon a time, in a digital galaxy far away...")
+        
+        ctrl_frame = ttk.Frame(self.infer_tab)
+        ctrl_frame.pack(fill=tk.X, padx=20, pady=10)
+        
+        self.gen_btn = tk.Button(ctrl_frame, text="EXECUTE PROPULSION (GENERATE)", bg='#0078d7', fg='white', 
+                                command=self.start_inference, font=("Inter", 10, "bold"))
+        self.gen_btn.pack(side=tk.LEFT, padx=5)
+        
+        ttk.Label(ctrl_frame, text="Max Tokens:").pack(side=tk.LEFT, padx=(20, 5))
+        self.token_var = tk.StringVar(value="100")
+        self.token_entry = ttk.Entry(ctrl_frame, textvariable=self.token_var, width=5)
+        self.token_entry.pack(side=tk.LEFT)
+        
+        res_label = ttk.Label(self.infer_tab, text="GENERATED ANALYTICS / 생성 결과", style="TLabel")
+        res_label.pack(pady=(20, 0), padx=20, anchor=tk.W)
+        
+        self.inference_result_var = tk.StringVar(value="")
+        self.res_area = scrolledtext.ScrolledText(self.infer_tab, height=15, bg='#000000', fg='#00ffcc', font=("Consolas", 10))
+        self.res_area.pack(fill=tk.BOTH, expand=True, padx=20, pady=5)
+        self.res_area.config(state=tk.DISABLED)
+
+        self.info_label = ttk.Label(right_panel, text="slmaker v1.0.0 (Odyssey) | Full Training & Inference | Dual-Interface", 
+style="TLabel")
+        self.info_label.pack(pady=(10, 0))
 
     def log(self, msg):
         self.log_queue.put(msg)
@@ -156,6 +197,14 @@ style="TLabel")
         try:
             while True:
                 data = self.data_queue.get_nowait()
+                # Check for inference result / 추론 결과 확인
+                if isinstance(data, dict) and 'inference_result' in data:
+                    self.res_area.config(state=tk.NORMAL)
+                    self.res_area.delete('1.0', tk.END)
+                    self.res_area.insert(tk.END, data['inference_result'])
+                    self.res_area.config(state=tk.DISABLED)
+                    continue
+
                 iter_val = data['iter']
                 loss_val = data['loss']
                 speed_val = data['speed']
@@ -180,13 +229,36 @@ style="TLabel")
         except queue.Empty:
             pass
         
+        # Sync simple string var to result area if needed / 필요한 경우 단순 문자열 변수를 결과 영역에 동기화
+        val = self.inference_result_var.get()
+        if val:
+            self.res_area.config(state=tk.NORMAL)
+            self.res_area.delete('1.0', tk.END)
+            self.res_area.insert(tk.END, val)
+            self.res_area.config(state=tk.DISABLED)
+            self.inference_result_var.set("") # Clear
+
         self.root.after(100, self._check_queues)
 
     def start_training(self):
         self.is_training = True
         self.start_btn.config(state=tk.DISABLED)
         self.stop_btn.config(state=tk.NORMAL)
+        self.notebook.select(self.train_tab)
         threading.Thread(target=self.run_engine, daemon=True).start()
+
+    def start_inference(self):
+        prompt = self.prompt_entry.get("1.0", tk.END).strip()
+        max_tokens = int(self.token_var.get())
+        self.gen_btn.config(state=tk.DISABLED)
+        self.log(f"Inference Started: '{prompt[:20]}...'")
+        threading.Thread(target=self.run_inference, args=(prompt, max_tokens), daemon=True).start()
+
+    def run_inference(self, prompt, max_tokens):
+        from train import engine_inference
+        result = engine_inference(prompt, max_tokens, self)
+        self.inference_result_var.set(result)
+        self.gen_btn.config(state=tk.NORMAL)
 
     def stop_training(self):
         self.is_training = False

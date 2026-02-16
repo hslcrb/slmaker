@@ -133,5 +133,48 @@ def engine_train(app=None):
 
         app.log("slmaker v0.8.0 All Formats Exported Successfully.")
 
+def engine_inference(prompt, max_tokens=100, app=None):
+    """
+    Standalone inference engine for Odyssey v1.0 / 오디세이 v1.0 독립 추론 엔진
+    """
+    tokenizer = Tokenizer()
+    vocab_size = tokenizer.vocab_size
+    
+    # Load model / 모델 로드
+    model = NanoSLM(vocab_size).to(device)
+    
+    # Check for weights / 가중치 확인
+    weight_path = 'slmaker_odyssey_v8.pth'
+    if os.path.exists(weight_path):
+        model.load_state_dict(torch.load(weight_path, map_location=device, weights_only=True))
+        if app: app.log("External weights loaded for inference.")
+    else:
+        if app: app.log("No saved weights found. Using initialized weights for demonstration.")
+
+    model.eval()
+    
+    # Process prompt / 프롬프트 처리
+    input_ids = torch.tensor([tokenizer.encode(prompt)], dtype=torch.long, device=device)
+    
+    if app: app.log(f"Generating legacy for: '{prompt}'...")
+    
+    with torch.no_grad():
+        generated_ids = model.generate(input_ids, max_tokens)
+    
+    result = tokenizer.decode(generated_ids[0].tolist())
+    
+    if app:
+        # For GUI/CLI real-time display / GUI/CLI 실시간 표시를 위해 데이터 큐 활용 가능
+        if hasattr(app, 'inference_result_var'):
+            app.inference_result_var.set(result)
+        app.log("Generation Complete.")
+    
+    return result
+
 if __name__ == "__main__":
-    engine_train()
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "inference":
+        prompt = "Once upon a time" if len(sys.argv) < 3 else sys.argv[2]
+        print(f"\n--- Odyssey Generation ---\nPrompt: {prompt}\nResult: {engine_inference(prompt)}\n")
+    else:
+        engine_train()

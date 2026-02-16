@@ -60,9 +60,23 @@ class NanoSLMCLI:
         table.add_row("Layers", str(n_layer))
         return table
 
-    def run(self):
+    def run_inference(self, prompt, max_tokens=100):
+        from train import engine_inference
+        self.make_layout() # Refresh layout
+        console.print(Panel(f"🌌 [bold cyan]ODYSSEY INFERENCE ENGINE[/]\nPrompt: [italic]{prompt}[/]", border_style="blue"))
+        
+        with console.status("[bold green]Generating propulsion...[/]"):
+            result = engine_inference(prompt, max_tokens, self)
+            
+        console.print(Panel(result, title="[bold green]GENERATED RESULT / 생성 결과[/]", border_style="green"))
+
+    def run(self, mode="train", prompt=None, max_tokens=100):
+        if mode == "inference":
+            self.run_inference(prompt, max_tokens)
+            return
+
         layout = self.make_layout()
-        layout["header"].update(Panel("🌌 [bold white on blue] NANO-SLM TRAINING ENGINE v1.0 [/][bold cyan] slmaker v0.8.0: Odyssey [/]", style="white", border_style="cyan"))
+        layout["header"].update(Panel("🌌 [bold white on blue] NANO-SLM TRAINING ENGINE v1.0 [/][bold cyan] slmaker v1.0.0: Odyssey [/]", style="white", border_style="cyan"))
         layout["footer"].update(Panel("Press [bold red]Ctrl+C[/] to stop safely / [bold yellow]Odyssey propulsion active[/]", border_style="dim"))
         
         current_data = {}
@@ -99,5 +113,11 @@ class NanoSLMCLI:
                 self.is_training = False
 
 if __name__ == "__main__":
+    import sys
     app = NanoSLMCLI()
-    app.run()
+    if len(sys.argv) > 1 and sys.argv[1] == "inference":
+        prompt = sys.argv[2] if len(sys.argv) > 2 else "Once upon a time"
+        max_tokens = int(sys.argv[3]) if len(sys.argv) > 3 else 100
+        app.run(mode="inference", prompt=prompt, max_tokens=max_tokens)
+    else:
+        app.run(mode="train")

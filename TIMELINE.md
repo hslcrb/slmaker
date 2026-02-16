@@ -12,3 +12,5 @@
 - [2026-02-16 16:20] 트리플 포맷(pth, safetensors, gguf) 수출 지원 및 v0.4.0 달성 / Triple-format export support and v0.4.0 achieved.
 - [2026-02-16 16:32] 1.2B 파라미터 '오디세이' 설계 및 v0.5.0 신적 도약 성공 / 1.2B 'Odyssey' design and v0.5.0 'God-scale' jump successful.
 - [2026-02-16 16:45] 비동기 프리페칭 및 캐싱 구현으로 v0.6.0 추진력 확보 / Secured v0.6.0 propulsion via async prefetching and caching.
+- [2026-02-16 17:00] v0.8.0: 오디세이 브랜드 통합 및 한영 병기 문서화 완비. / Odyssey branding and bilingual docs.
+- [2026-02-16 17:15] v1.0.0: 바이트 단위 토크나이저, KV 캐싱, 이중 인터페이스 추론 통합 완료. / Final v1.0.0: Byte-level tokenizer, KV Caching, and dual-interface inference.
