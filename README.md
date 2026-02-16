@@ -11,7 +11,7 @@
 
 ## ✨ 핵심 기능 / Key Features
 
-- **🚀 Ultra-Optimized Engine**: 1.5M 파라미터 트랜스포머 아키텍처로 CPU에서 가벼운 학습 달성. / Lightweight training on CPU with a 1.5M parameter Transformer architecture.
+- **🚀 Ultra-Optimized Engine (v0.2.0)**: SDPA, RMSNorm, RoPE 및 JIT 컴파일을 통한 극한의 수학적 성능 강화. / Extreme mathematical reinforcement via SDPA, RMSNorm, RoPE, and JIT compilation.
 - **🖥️ Professional Dashboard**: 실시간 Loss 그래프와 하드웨어 모니터링을 갖춘 Tkinter GUI. / Tkinter GUI featuring real-time Loss graphs and hardware monitoring.
 - **📦 Global CI/CD**: GitHub Actions를 통한 멀티 OS(Ubuntu, Windows, MacOS) 자동 릴리스 및 도커 배포. / Automated multi-OS releases and Docker deployment via GitHub Actions.
 - **🛡️ Secure Archiving**: 전역 지침에 따른 세션 브레인 및 대화 이력 자동 관리. / Automated management of session brain and conversation history as per global rules.
