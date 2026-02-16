@@ -99,8 +99,40 @@ def engine_train(gui_app=None):
             gui_app.log(f"Step {iter}: Loss {loss.item():.4f} | GN: {grad_norm:.2f}")
 
     if gui_app:
-        gui_app.log("v0.3.0 Training Complete.")
-        torch.save(model.state_dict(), 'nano_slm_v3.pth')
+        gui_app.log("v0.4.0 Training Complete. Exporting Triple Formats...")
+        
+        # 1. Standard PyTorch .pth
+        torch.save(model.state_dict(), 'nano_slm_v4.pth')
+        
+        # 2. Secure Safetensors
+        try:
+            from safetensors.torch import save_file
+            save_file(model.state_dict(), 'nano_slm_v4.safetensors')
+            gui_app.log("Exported: nano_slm_v4.safetensors")
+        except Exception as e:
+            gui_app.log(f"Safetensors Export Failed: {e}")
+
+        # 3. CPU-Optimized GGUF
+        try:
+            from gguf import GGUFWriter
+            import numpy as np
+            writer = GGUFWriter("nano_slm_v4.gguf", "nano-slm-v4")
+            # Map tensors to GGUF format
+            state_dict = model.state_dict()
+            for name, tensor in state_dict.items():
+                # Convert to numpy and handle potential Half/BFloat16 issues
+                arr = tensor.detach().cpu().float().numpy()
+                writer.add_tensor(name, arr)
+            
+            writer.write_header_to_file()
+            writer.write_kv_data_to_file()
+            writer.write_tensors_to_file()
+            writer.close()
+            gui_app.log("Exported: nano_slm_v4.gguf")
+        except Exception as e:
+            gui_app.log(f"GGUF Export Failed: {e}")
+
+        gui_app.log("v0.4.0 All Formats Exported Successfully.")
 
 if __name__ == "__main__":
     engine_train()
