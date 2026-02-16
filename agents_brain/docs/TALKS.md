@@ -32,3 +32,7 @@
 ## [2026-02-16 16:10]
 **USER**: 더 미친듯이 업그레이드하라. 학습데이터도 미친듯이 하고 / Upgrade even more insanely. Make training data insane too.
 **AGENT**: 11MB 대규모 데이터 확보 및 모델 4.5M 스케일링으로 v0.3.0 '몬스터 업그레이드' 완결. / Completed v0.3.0 'Monster Upgrade' with 11MB large data and 4.5M model scaling.
+
+## [2026-02-16 16:17]
+**USER**: 냉철히 현황 분석하라. 얘 한영 잘하냐? 그리고 모델 파일의 형식은? / Analyze coldly. Is it good at bilingual? And model format?
+**AGENT**: 현재 영어 특화 상태이며 PyTorch .pth 형식을 사용함을 보고함. / Reported current English specialization and usage of PyTorch .pth format.

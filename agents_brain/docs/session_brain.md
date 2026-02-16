@@ -16,3 +16,4 @@
 - **파라미터 스케일링 / Parameter Scaling**: 모델 크기를 1.5M에서 ~4.5M으로 약 3배 확장하여 지능 밀도 고도화. / Expanded model size 3x (1.5M -> 4.5M) for higher intelligence density.
 - **극한 강화 / Extreme Reinforcement**: SDPA, RMSNorm, RoPE 도입으로 수학적 엔진을 현존 LLM 수준으로 강화 (v0.2.0). / Reinforced mathematical engine to modern LLM standards via SDPA, RMSNorm, and RoPE (v0.2.0).
 - **안정성 검증 / Stability Verification**: 4GB RAM 환경에서의 무사고 안정성 및 CPU 가속 성능 최종 평가 완료. / Completed final stability and CPU acceleration assessment for 4GB RAM environments.
+- **냉철한 한계 / Cold Limits**: 현재 모델은 영어 데이터셋에 특화되어 있으며, PyTorch .pth 형식을 사용함. / Currently specialized in English datasets and uses PyTorch .pth format.
