@@ -36,3 +36,7 @@
 ## [2026-02-16 16:17]
 **USER**: 냉철히 현황 분석하라. 얘 한영 잘하냐? 그리고 모델 파일의 형식은? / Analyze coldly. Is it good at bilingual? And model format?
 **AGENT**: 현재 영어 특화 상태이며 PyTorch .pth 형식을 사용함을 보고함. / Reported current English specialization and usage of PyTorch .pth format.
+
+## [2026-02-16 16:19]
+**USER**: .safetensors 포맷과 .gguf 로도 총3개 동시에 나 나오게 코드 수정할수 있냐? / Can you modify the code to output 3 formats including .safetensors and .gguf?
+**AGENT**: `.pth`, `.safetensors`, `.gguf` 트리플 포맷 동시 수출 기능을 v0.4.0에 완벽 구현함. / Perfectly implemented triple-format simultaneous export in v0.4.0.
