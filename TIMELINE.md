@@ -9,3 +9,4 @@
 - [2026-02-16 15:48] Nano-SLM GUI v1.0 개발 완료 및 v0.1.0 정식 릴리스 / Completed Nano-SLM GUI v1.0 and official release of v0.1.0.
 - [2026-02-16 16:00] 극한의 수학적 최적화 (SDPA, RMSNorm, RoPE, JIT) 및 v0.2.0 배포 완료 / Extreme mathematical optimization and v0.2.0 deployment complete.
 - [2026-02-16 16:15] 미친듯한 고도화 (v0.3.0): 4.5M 파라미터 확장 및 11MB 데이터 확보 / Insane upgrade (v0.3.0): 4.5M parameter scaling and 11MB data acquisition.
+- [2026-02-16 16:20] 트리플 포맷(pth, safetensors, gguf) 수출 지원 및 v0.4.0 달성 / Triple-format export support and v0.4.0 achieved.
