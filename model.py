@@ -11,9 +11,9 @@ eval_interval = 500
 learning_rate = 3e-4
 device = 'cpu'
 eval_iters = 200
-n_embd = 128
-n_head = 4
-n_layer = 4
+n_embd = 192 # Increased from 128
+n_head = 6 # Increased from 4
+n_layer = 8 # Increased from 4
 dropout = 0.0
 
 # 1. RMSNorm: Mathematically simpler and faster than LayerNorm / LayerNorm보다 수학적으로 단순하고 빠른 RMSNorm
