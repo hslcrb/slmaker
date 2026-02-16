@@ -6,6 +6,11 @@ import time
 
 # Engine wrapper for GUI / GUI를 위한 엔진 래퍼
 def engine_train(gui_app=None):
+    # Extreme CPU Acceleration / 극한의 CPU 가속 설정
+    torch.set_num_threads(os.cpu_count())
+    if hasattr(torch, 'set_float32_matmul_precision'):
+        torch.set_float32_matmul_precision('high')
+    
     # 1. Data Loading / 데이터 로딩
     data_path = 'data/sample.txt'
     if not os.path.exists(data_path):

@@ -19,10 +19,15 @@ class NanoSLMGUI:
         
         self.style = ttk.Style()
         self.style.theme_use('clam')
+        # Font Fallback / 폰트 폴백 설정
+        self.font_main = ("Helvetica", 10)
+        self.font_header = ("Helvetica", 14, "bold")
+        self.font_mono = ("Courier", 9)
+        
         self.style.configure("TFrame", background="#1e1e1e")
-        self.style.configure("TLabel", background="#1e1e1e", foreground="#ffffff", font=("Inter", 10))
-        self.style.configure("Header.TLabel", font=("Inter", 14, "bold"), foreground="#00ffcc")
-        self.style.configure("TButton", font=("Inter", 10, "bold"))
+        self.style.configure("TLabel", background="#1e1e1e", foreground="#ffffff", font=self.font_main)
+        self.style.configure("Header.TLabel", font=self.font_header, foreground="#00ffcc")
+        self.style.configure("TButton", font=(self.font_main[0], 10, "bold"))
         
         self.log_queue = queue.Queue()
         self.data_queue = queue.Queue()
@@ -104,8 +109,9 @@ class NanoSLMGUI:
         self.fig.patch.set_facecolor('#1e1e1e')
         self.ax.set_facecolor('#2d2d2d')
         self.ax.tick_params(colors='white')
-        self.ax.set_title("Training Loss / 학습 손실 곡선", color='#00ffcc', fontproperties='Inter')
-        self.loss_line, = self.ax.plot([], [], color='#00ffcc')
+        self.ax.set_title("Training Loss / 학습 손실 곡선", color='#00ffcc', fontname='DejaVu Sans')
+        self.loss_line, = self.ax.plot([], [], color='#00ffcc', linewidth=1.5, marker='o', markersize=2, alpha=0.8)
+        self.ax.grid(True, linestyle='--', alpha=0.3, color='#444444')
         
         self.canvas = FigureCanvasTkAgg(self.fig, master=right_panel)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
