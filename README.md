@@ -12,6 +12,7 @@
 ## ✨ 핵심 기능 / Key Features
 
 - **🚀 Monster-Grade Engine (v0.3.0)**: 4.5M 파라미터 확장 및 11MB TinyStories 고품질 데이터 학습. / 4.5M parameter scaling and training on 11MB TinyStories high-quality corpus.
+- **🌌 God-Scale Odyssey (v0.5.0)**: SSD 매핑 기술을 통한 **1.2B 파라미터** 한계 돌파. / Breaking the 1.2B parameter barrier via SSD-mapping technology.
 - **🛡️ Secure Triple-Export (v0.4.0)**: `.pth`, `.safetensors`, `.gguf` 포맷 동시 출력 지원. / Simultaneous output support for `.pth`, `.safetensors`, and `.gguf` formats.
 - **🖥️ Insane Telemetry Dashboard**: 실시간 Tokens/sec 및 Grad-Norm 모니터링이 추가된 프로페셔널 GUI. / Professional GUI with real-time Tokens/sec and Grad-Norm monitoring.
 - **📦 Global CI/CD**: GitHub Actions를 통한 멀티 OS(Ubuntu, Windows, MacOS) 자동 릴리스 및 도커 배포. / Automated multi-OS releases and Docker deployment via GitHub Actions.

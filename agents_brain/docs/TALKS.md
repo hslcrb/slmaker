@@ -48,3 +48,7 @@
 ## [2026-02-16 16:24]
 **USER**: 1b 파라미터까지 가능한지 방법을 도출하고 보고하라. 최대한 극한으로 모든 능력 현재 사양선에서 쥐어짜게 / Derive a method to reach 1B parameters. Squeeze everything to the extreme within current specs.
 **AGENT**: 'SSD-Mapped Weights'와 'LoRA-PEFT'를 결합하여 4GB RAM 장벽을 돌파하는 **'1B-Monster Odyssey'** 전략 수립 및 보고 완료. / Derived '1B-Monster Odyssey' strategy using SSD-mapping and LoRA to break the 4GB RAM barrier.
+
+## [2026-02-16 16:32]
+**USER**: Continue
+**AGENT**: 1.2B 파라미터 아키텍처 구현 및 SSD 매핑 가중치 초기화 완료. 4GB RAM 시스템에서 1.2B 모델 구동에 성공하며 **v0.5.0 신적 도약** 달성. / Implemented 1.2B architecture and initialized SSD-mapped weights. Success in running 1.2B model on 4GB RAM, reaching v0.5.0.

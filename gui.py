@@ -56,7 +56,7 @@ class NanoSLMGUI:
             ("Target Device:", "CPU (Optimized)"),
             ("Memory Limit:", "4GB RAM"),
             ("Model Type:", "Decoder-only Transformer"),
-            ("Parameters:", "~4.5M"),
+            ("Parameters:", "~1.2B"),
             ("Embed Dim:", str(n_embd)),
             ("Heads/Layers:", f"{n_head} / {n_layer}")
         ]
@@ -129,8 +129,9 @@ class NanoSLMGUI:
         self.canvas = FigureCanvasTkAgg(self.fig, master=right_panel)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
-        # Log / 로그
         log_label = ttk.Label(right_panel, text="Training Logs / 학습 로그", style="TLabel")
+        log_label.pack(pady=(10, 0))
+        self.log_area = scrolledtext.ScrolledText(right_panel, height=10, bg='#000000', fg='#ffffff', font=("Consolas", 9))
         log_label.pack(pady=(10, 0))
         self.log_area = scrolledtext.ScrolledText(right_panel, height=10, bg='#000000', fg='#ffffff', font=("Consolas", 9))
         self.log_area.pack(fill=tk.BOTH, expand=True, pady=5)

@@ -11,10 +11,45 @@ eval_interval = 500
 learning_rate = 3e-4
 device = 'cpu'
 eval_iters = 200
-n_embd = 192 # Increased from 128
-n_head = 6 # Increased from 4
-n_layer = 8 # Increased from 4
-dropout = 0.0
+# Odyssey Config for 1B-Monster (v0.5.0) / v0.5.0 1B-몬스터용 오디세이 설정
+n_embd = 2048 # Scaled from 192 (v0.3.0)
+n_head = 16   # Scaled from 6
+n_layer = 24  # Scaled from 8
+dropout = 0.1
+# Total Params: ~1.2B
+
+import numpy as np
+import os
+
+class MmapLinear(nn.Module):
+    """
+    Linear layer that reads weights from an SSD-mapped file to save RAM.
+    SSD 매핑된 파일에서 가중치를 읽어 RAM을 절약하는 선형 레이어.
+    """
+    def __init__(self, in_features, out_features, mmap_path=None):
+        super().__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.mmap_path = mmap_path
+        
+        if mmap_path and os.path.exists(mmap_path):
+            self.weight = nn.Parameter(torch.from_numpy(np.memmap(mmap_path, dtype='float32', mode='r', shape=(out_features, in_features))), requires_grad=False)
+        else:
+            self.weight = nn.Parameter(torch.randn(out_features, in_features) * 0.02, requires_grad=False)
+        
+        self.bias = nn.Parameter(torch.zeros(out_features), requires_grad=False)
+        
+        # LoRA Adapters (The only thing that will be in RAM and trained)
+        # LoRA 어댑터 (RAM에 상주하며 학습되는 유일한 부분)
+        self.lora_rank = 4
+        self.lora_A = nn.Parameter(torch.randn(in_features, self.lora_rank) * 0.01)
+        self.lora_B = nn.Parameter(torch.zeros(self.lora_rank, out_features))
+
+    def forward(self, x):
+        # Base weight (Frozen/Offloaded) + LoRA path (Active/RAM)
+        res = F.linear(x, self.weight, self.bias)
+        res += (x @ self.lora_A) @ self.lora_B
+        return res
 
 # 1. RMSNorm: Mathematically simpler and faster than LayerNorm / LayerNorm보다 수학적으로 단순하고 빠른 RMSNorm
 class RMSNorm(nn.Module):
@@ -48,14 +83,16 @@ def apply_rotary_emb(xq, xk, freqs_cis):
 
 # 3. Optimized Attention with SDPA / SDPA를 사용한 최적화된 어텐션
 class CausalSelfAttention(nn.Module):
-    def __init__(self):
+    def __init__(self, block_idx):
         super().__init__()
         assert n_embd % n_head == 0
-        self.c_attn = nn.Linear(n_embd, 3 * n_embd, bias=False)
-        self.c_proj = nn.Linear(n_embd, n_embd, bias=False)
+        path_attn = f"data/weights/block_{block_idx}_attn_c_attn.bin"
+        path_proj = f"data/weights/block_{block_idx}_attn_c_proj.bin"
+        
+        self.c_attn = MmapLinear(n_embd, 3 * n_embd, mmap_path=path_attn)
+        self.c_proj = MmapLinear(n_embd, n_embd, mmap_path=path_proj)
         self.n_head = n_head
         self.n_embd = n_embd
-        # We'll precompute freqs_cis in the main model
 
     def forward(self, x, freqs_cis):
         B, T, C = x.size()
@@ -74,11 +111,14 @@ class CausalSelfAttention(nn.Module):
         return self.c_proj(y)
 
 class MLP(nn.Module):
-    def __init__(self):
+    def __init__(self, block_idx):
         super().__init__()
-        self.c_fc = nn.Linear(n_embd, 4 * n_embd, bias=False)
-        self.c_proj = nn.Linear(4 * n_embd, n_embd, bias=False)
-        self.nonlin = nn.SiLU() # SwiGLU style non-linearity
+        path_fc = f"data/weights/block_{block_idx}_mlp_c_fc.bin"
+        path_proj = f"data/weights/block_{block_idx}_mlp_c_proj.bin"
+        
+        self.c_fc = MmapLinear(n_embd, 4 * n_embd, mmap_path=path_fc)
+        self.c_proj = MmapLinear(4 * n_embd, n_embd, mmap_path=path_proj)
+        self.nonlin = nn.SiLU()
 
     def forward(self, x):
         x = self.c_fc(x)
@@ -87,12 +127,12 @@ class MLP(nn.Module):
         return x
 
 class Block(nn.Module):
-    def __init__(self):
+    def __init__(self, block_idx):
         super().__init__()
         self.rms_1 = RMSNorm(n_embd)
-        self.attn = CausalSelfAttention()
+        self.attn = CausalSelfAttention(block_idx)
         self.rms_2 = RMSNorm(n_embd)
-        self.mlp = MLP()
+        self.mlp = MLP(block_idx)
 
     def forward(self, x, freqs_cis):
         x = x + self.attn(self.rms_1(x), freqs_cis)
@@ -103,9 +143,9 @@ class NanoSLM(nn.Module):
     def __init__(self, vocab_size):
         super().__init__()
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
-        self.blocks = nn.ModuleList([Block() for _ in range(n_layer)])
+        self.blocks = nn.ModuleList([Block(i) for i in range(n_layer)])
         self.rms_f = RMSNorm(n_embd)
-        self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
+        self.lm_head = MmapLinear(n_embd, vocab_size, mmap_path="data/weights/lm_head.bin")
         
         # Precompute RoPE frequencies / RoPE 주파수 사전 계산
         self.freqs_cis = precompute_freqs_cis(n_embd // n_head, block_size * 2)
