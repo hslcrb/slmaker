@@ -11,8 +11,8 @@
 
 ## ✨ 핵심 기능 / Key Features
 
-- **🚀 Ultra-Optimized Engine (v0.2.0)**: SDPA, RMSNorm, RoPE 및 JIT 컴파일을 통한 극한의 수학적 성능 강화. / Extreme mathematical reinforcement via SDPA, RMSNorm, RoPE, and JIT compilation.
-- **🖥️ Professional Dashboard**: 실시간 Loss 그래프와 하드웨어 모니터링을 갖춘 Tkinter GUI. / Tkinter GUI featuring real-time Loss graphs and hardware monitoring.
+- **🚀 Monster-Grade Engine (v0.3.0)**: 4.5M 파라미터 확장 및 11MB TinyStories 고품질 데이터 학습. / 4.5M parameter scaling and training on 11MB TinyStories high-quality corpus.
+- **🖥️ Insane Telemetry Dashboard**: 실시간 Tokens/sec 및 Grad-Norm 모니터링이 추가된 프로페셔널 GUI. / Professional GUI with real-time Tokens/sec and Grad-Norm monitoring.
 - **📦 Global CI/CD**: GitHub Actions를 통한 멀티 OS(Ubuntu, Windows, MacOS) 자동 릴리스 및 도커 배포. / Automated multi-OS releases and Docker deployment via GitHub Actions.
 - **🛡️ Secure Archiving**: 전역 지침에 따른 세션 브레인 및 대화 이력 자동 관리. / Automated management of session brain and conversation history as per global rules.
 
