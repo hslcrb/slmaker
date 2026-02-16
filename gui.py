@@ -56,7 +56,7 @@ class NanoSLMGUI:
             ("Target Device:", "CPU (Optimized)"),
             ("Memory Limit:", "4GB RAM"),
             ("Model Type:", "Decoder-only Transformer"),
-            ("Parameters:", "~1.5M"),
+            ("Parameters:", "~4.5M"),
             ("Embed Dim:", str(n_embd)),
             ("Heads/Layers:", f"{n_head} / {n_layer}")
         ]
@@ -78,11 +78,15 @@ class NanoSLMGUI:
         self.iter_var = tk.StringVar(value="0")
         self.loss_var = tk.StringVar(value="0.0000")
         self.speed_var = tk.StringVar(value="0.0 it/s")
+        self.tokens_per_sec_var = tk.StringVar(value="0.0 tok/s")
+        self.grad_norm_var = tk.StringVar(value="0.00")
         
         metrics = [
             ("Iteration:", self.iter_var),
             ("Loss (Train):", self.loss_var),
-            ("Speed:", self.speed_var)
+            ("Speed (it/s):", self.speed_var),
+            ("T-Throughput:", self.tokens_per_sec_var),
+            ("Grad Norm:", self.grad_norm_var)
         ]
         
         for label, var in metrics:
@@ -149,9 +153,17 @@ class NanoSLMGUI:
         try:
             while True:
                 data = self.data_queue.get_nowait()
-                self.iter_var.set(str(data['iter']))
-                self.loss_var.set(f"{data['loss']:.4f}")
-                self.speed_var.set(f"{data['speed']:.1f} it/s")
+                iter_val = data['iter']
+                loss_val = data['loss']
+                speed_val = data['speed']
+                tps_val = data.get('tokens_per_sec', 0.0)
+                gn_val = data.get('grad_norm', 0.0)
+                
+                self.iter_var.set(str(iter_val))
+                self.loss_var.set(f"{loss_val:.4f}")
+                self.speed_var.set(f"{speed_val:.1f} it/s")
+                self.tokens_per_sec_var.set(f"{tps_val:.1f} tok/s")
+                self.grad_norm_var.set(f"{gn_val:.2f}")
                 
                 # Update Chart
                 y_data = self.loss_line.get_ydata()
