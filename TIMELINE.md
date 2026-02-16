@@ -6,4 +6,4 @@
 - [2026-02-16 14:47] `LICENSE` (Apache 2.0) 및 `README.md` 생성 완료. / `LICENSE` and `README.md` created.
 - [2026-02-16 14:47] `agents_brain/docs/session_brain.md` 및 `TALKS.md` 생성 중. / `session_brain.md` and `TALKS.md` being created.
 - [2026-02-16 15:20] Nano-SLM 엔진 개발 및 CPU 학습 성공 (Loss 0.18) / Nano-SLM engine development and successful CPU training (Loss 0.18).
-- [2026-02-16 15:40] Nano-SLM GUI v1.0 개발 완료 및 공개 리포지토리 전환 / Completed Nano-SLM GUI v1.0 and switched to public repository.
+- [2026-02-16 15:48] Nano-SLM GUI v1.0 개발 완료 및 v0.1.0 정식 릴리스 / Completed Nano-SLM GUI v1.0 and official release of v0.1.0.
