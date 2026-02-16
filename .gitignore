@@ -1,0 +1,9 @@
+venv/
+__pycache__/
+*.pth
+data/sample.txt
+nano_slm.pth
+.agent/
+brain/
+recycle_trash/
+*.pyc
