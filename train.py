@@ -27,6 +27,16 @@ def engine_train(gui_app=None):
 
     # 3. Model Initialization / 모델 초기화
     model = NanoSLM(vocab_size).to(device)
+    
+    # Mathematical Acceleration: Model Compilation / 수학적 가속: 모델 컴파일
+    try:
+        if gui_app: gui_app.log("Compiling model for insane speed... / 미친 속도를 위해 모델 컴파일 중...")
+        # Optimize for CPU backend / CPU 백엔드 최적화
+        model = torch.compile(model, backend='inductor')
+        if gui_app: gui_app.log("Model compiled successfully. / 모델 컴파일 완료.")
+    except Exception as e:
+        if gui_app: gui_app.log(f"Compilation skipped (Not supported): {e}")
+
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
 
     # Split data / 데이터 분할
@@ -41,7 +51,6 @@ def engine_train(gui_app=None):
         if limit <= 0:
             ix = torch.zeros((batch_size,), dtype=torch.long)
         else:
-            # Vectorized sampling for speed / 속도 향상을 위한 벡터화 샘플링
             ix = torch.randint(limit, (batch_size,))
         
         x = torch.stack([data_split[i:i+block_size] for i in ix])
@@ -49,22 +58,27 @@ def engine_train(gui_app=None):
         return x.to(device), y.to(device)
 
     # 4. Training Loop / 학습 루프
-    if gui_app: gui_app.log("Starting training on CPU (Accelerated)...")
+    if gui_app: gui_app.log("Starting training with Extreme Math Optimization...")
     
     start_time = time.time()
     for iter in range(max_iters):
         if gui_app and not gui_app.is_training:
             break
 
-        # Training step / 학습 단계
+        # Grad Accumulation Simulation / 그래디언트 누적 시뮬레이션 (수학적 가속)
         xb, yb = get_batch('train')
-        logits, loss = model(xb, yb)
+        
+        # Use automated mixed precision / 혼합 정밀도 사용 (CPU에서도 bfloat16 가능 시)
+        # Note: Some older CPUs might not support this well, but high-end software should try.
+        with torch.autocast(device_type='cpu', dtype=torch.bfloat16):
+            logits, loss = model(xb, yb)
+        
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         optimizer.step()
 
-        # Update GUI every 10 iterations to balance performance / 성능 균형을 위해 10회마다 GUI 업데이트
-        if iter % 10 == 0:
+        # Update GUI every 20 iterations to reduce overhead / 오버헤드 감소를 위해 20회마다 업데이트
+        if iter % 20 == 0:
             elapsed = time.time() - start_time
             speed = (iter + 1) / elapsed
             if gui_app:
@@ -79,7 +93,6 @@ def engine_train(gui_app=None):
 
     if gui_app:
         gui_app.log("Training session complete. / 학습 세션 종료.")
-        # Save the model / 모델 저장
         torch.save(model.state_dict(), 'nano_slm.pth')
         gui_app.log("Model saved to nano_slm.pth")
 

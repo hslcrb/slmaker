@@ -109,7 +109,16 @@ class NanoSLMGUI:
         self.fig.patch.set_facecolor('#1e1e1e')
         self.ax.set_facecolor('#2d2d2d')
         self.ax.tick_params(colors='white')
-        self.ax.set_title("Training Loss / 학습 손실 곡선", color='#00ffcc', fontname='DejaVu Sans')
+        
+        # Safe font handling / 안전한 폰트 처리
+        try:
+            import matplotlib as mpl
+            mpl.rcParams['font.family'] = 'sans-serif'
+            mpl.rcParams['axes.unicode_minus'] = False
+            self.ax.set_title("Training Loss (Accelerated Math)", color='#00ffcc')
+        except:
+            self.ax.set_title("Training Loss (LIVE)", color='#00ffcc')
+            
         self.loss_line, = self.ax.plot([], [], color='#00ffcc', linewidth=1.5, marker='o', markersize=2, alpha=0.8)
         self.ax.grid(True, linestyle='--', alpha=0.3, color='#444444')
         

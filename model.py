@@ -1,105 +1,135 @@
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
+import math
 
-# Nano-SLM Hyperparameters / 하이퍼파라미터 설정
-# CPU 및 4GB RAM 최적화 / Optimized for CPU and 4GB RAM
-batch_size = 1 # RAM 절약을 위해 배치 크기 최소화 / Minimize batch size for RAM
-block_size = 64 # 문맥 길이 / Context length
+# Mathematical Hyperparameters / 수학적 하이퍼파라미터
+batch_size = 1 # Keep it 1 for 4GB RAM / 4GB RAM 유지를 위해 1로 고정
+block_size = 64 # Context length
 max_iters = 5000
 eval_interval = 500
-learning_rate = 1e-3
-device = 'cpu' # CPU 강제 사용 / Force CPU usage
+learning_rate = 3e-4
+device = 'cpu'
 eval_iters = 200
-n_embd = 128 # 임베딩 차원 축소 / Reduced embedding dimension
-n_head = 4   # 헤드 수 축소 / Reduced number of heads
-n_layer = 4  # 레이어 수 축소 / Reduced number of layers
-dropout = 0.1
+n_embd = 128
+n_head = 4
+n_layer = 4
+dropout = 0.0
 
-class Head(nn.Module):
-    """ One head of self-attention / 셀프 어텐션의 단일 헤드 """
-    def __init__(self, head_size):
+# 1. RMSNorm: Mathematically simpler and faster than LayerNorm / LayerNorm보다 수학적으로 단순하고 빠른 RMSNorm
+class RMSNorm(nn.Module):
+    def __init__(self, dim, eps=1e-6):
         super().__init__()
-        self.key = nn.Linear(n_embd, head_size, bias=False)
-        self.query = nn.Linear(n_embd, head_size, bias=False)
-        self.value = nn.Linear(n_embd, head_size, bias=False)
-        self.register_buffer('tril', torch.tril(torch.ones(block_size, block_size)))
-        self.dropout = nn.Dropout(dropout)
+        self.eps = eps
+        self.weight = nn.Parameter(torch.ones(dim))
+
+    def _norm(self, x):
+        return x * torch.rsqrt(x.pow(2).mean(-1, keepdim=True) + self.eps)
 
     def forward(self, x):
-        B, T, C = x.shape
-        k = self.key(x)   # (B, T, head_size)
-        q = self.query(x) # (B, T, head_size)
-        # Compute attention scores / 어텐션 점수 계산 (affinities)
-        wei = q @ k.transpose(-2, -1) * C**-0.5 # (B, T, T)
-        wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf'))
-        wei = F.softmax(wei, dim=-1)
-        wei = self.dropout(wei)
-        # Perform weighted aggregation / 가중 합산 수행
-        v = self.value(x)
-        out = wei @ v
-        return out
+        output = self._norm(x.float()).type_as(x)
+        return output * self.weight
 
-class MultiHeadAttention(nn.Module):
-    """ Multiple heads of self-attention in parallel / 병렬 셀프 어텐션 멀티 헤드 """
-    def __init__(self, num_heads, head_size):
+# 2. RoPE (Rotary Positional Embedding): Better relative positioning / 더 나은 상대적 위치 표현력을 위한 RoPE
+def precompute_freqs_cis(dim, end, theta=10000.0):
+    freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
+    t = torch.arange(end, device=freqs.device)
+    freqs = torch.outer(t, freqs).float()
+    freqs_cis = torch.polar(torch.ones_like(freqs), freqs)
+    return freqs_cis
+
+def apply_rotary_emb(xq, xk, freqs_cis):
+    xq_ = torch.view_as_complex(xq.float().reshape(*xq.shape[:-1], -1, 2))
+    xk_ = torch.view_as_complex(xk.float().reshape(*xk.shape[:-1], -1, 2))
+    freqs_cis = freqs_cis.view(1, xq_.size(1), 1, xq_.size(3))
+    xq_out = torch.view_as_real(xq_ * freqs_cis).flatten(3)
+    xk_out = torch.view_as_real(xk_ * freqs_cis).flatten(3)
+    return xq_out.type_as(xq), xk_out.type_as(xk)
+
+# 3. Optimized Attention with SDPA / SDPA를 사용한 최적화된 어텐션
+class CausalSelfAttention(nn.Module):
+    def __init__(self):
         super().__init__()
-        self.heads = nn.ModuleList([Head(head_size) for _ in range(num_heads)])
-        self.proj = nn.Linear(n_embd, n_embd)
-        self.dropout = nn.Dropout(dropout)
+        assert n_embd % n_head == 0
+        self.c_attn = nn.Linear(n_embd, 3 * n_embd, bias=False)
+        self.c_proj = nn.Linear(n_embd, n_embd, bias=False)
+        self.n_head = n_head
+        self.n_embd = n_embd
+        # We'll precompute freqs_cis in the main model
+
+    def forward(self, x, freqs_cis):
+        B, T, C = x.size()
+        q, k, v = self.c_attn(x).split(self.n_embd, dim=2)
+        k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+        v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+
+        # Apply RoPE / RoPE 적용
+        q, k = apply_rotary_emb(q, k, freqs_cis)
+
+        # Scaled Dot-Product Attention / 고밀도 수학적 어텐션 연산
+        y = F.scaled_dot_product_attention(q, k, v, is_causal=True)
+        
+        y = y.transpose(1, 2).contiguous().view(B, T, C)
+        return self.c_proj(y)
+
+class MLP(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.c_fc = nn.Linear(n_embd, 4 * n_embd, bias=False)
+        self.c_proj = nn.Linear(4 * n_embd, n_embd, bias=False)
+        self.nonlin = nn.SiLU() # SwiGLU style non-linearity
 
     def forward(self, x):
-        out = torch.cat([h(x) for h in self.heads], dim=-1)
-        out = self.dropout(self.proj(out))
-        return out
-
-class FeedForward(nn.Module):
-    """ Simple linear layer followed by a non-linearity / 단순 리니어 레이어 및 비선형 활성화 """
-    def __init__(self, n_embd):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(n_embd, 4 * n_embd),
-            nn.ReLU(),
-            nn.Linear(4 * n_embd, n_embd),
-            nn.Dropout(dropout),
-        )
-
-    def forward(self, x):
-        return self.net(x)
+        x = self.c_fc(x)
+        x = self.nonlin(x)
+        x = self.c_proj(x)
+        return x
 
 class Block(nn.Module):
-    """ Transformer block: communication followed by computation / 트랜스포머 블록: 통신 후 연산 """
-    def __init__(self, n_embd, n_head):
+    def __init__(self):
         super().__init__()
-        head_size = n_embd // n_head
-        self.sa = MultiHeadAttention(n_head, head_size)
-        self.ffwd = FeedForward(n_embd)
-        self.ln1 = nn.LayerNorm(n_embd)
-        self.ln2 = nn.LayerNorm(n_embd)
+        self.rms_1 = RMSNorm(n_embd)
+        self.attn = CausalSelfAttention()
+        self.rms_2 = RMSNorm(n_embd)
+        self.mlp = MLP()
 
-    def forward(self, x):
-        x = x + self.sa(self.ln1(x))
-        x = x + self.ffwd(self.ln2(x))
+    def forward(self, x, freqs_cis):
+        x = x + self.attn(self.rms_1(x), freqs_cis)
+        x = x + self.mlp(self.rms_2(x))
         return x
 
 class NanoSLM(nn.Module):
-    """ Nano Small Language Model (Decoder-only Transformer) / 나노 소형 언어 모델 """
     def __init__(self, vocab_size):
         super().__init__()
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
-        self.position_embedding_table = nn.Embedding(block_size, n_embd)
-        self.blocks = nn.Sequential(*[Block(n_embd, n_head=n_head) for _ in range(n_layer)])
-        self.ln_f = nn.LayerNorm(n_embd)
-        self.lm_head = nn.Linear(n_embd, vocab_size)
+        self.blocks = nn.ModuleList([Block() for _ in range(n_layer)])
+        self.rms_f = RMSNorm(n_embd)
+        self.lm_head = nn.Linear(n_embd, vocab_size, bias=False)
+        
+        # Precompute RoPE frequencies / RoPE 주파수 사전 계산
+        self.freqs_cis = precompute_freqs_cis(n_embd // n_head, block_size * 2)
+
+        self.apply(self._init_weights)
+
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
+        elif isinstance(module, nn.Embedding):
+            torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
     def forward(self, idx, targets=None):
         B, T = idx.shape
-        tok_emb = self.token_embedding_table(idx) # (B, T, n_embd)
-        pos_emb = self.position_embedding_table(torch.arange(T, device=device)) # (T, n_embd)
-        x = tok_emb + pos_emb
-        x = self.blocks(x)
-        x = self.ln_f(x)
-        logits = self.lm_head(x) # (B, T, vocab_size)
+        x = self.token_embedding_table(idx)
+        
+        # Pass freqs_cis to blocks / 블록에 RoPE 주파수 전달
+        freqs_cis = self.freqs_cis[:T].to(idx.device)
+        
+        for block in self.blocks:
+            x = block(x, freqs_cis)
+            
+        x = self.rms_f(x)
+        logits = self.lm_head(x)
 
         if targets is None:
             loss = None
@@ -112,12 +142,11 @@ class NanoSLM(nn.Module):
         return logits, loss
 
     def generate(self, idx, max_new_tokens):
-        # idx is (B, T) array of indices in the current context
         for _ in range(max_new_tokens):
             idx_cond = idx[:, -block_size:]
             logits, loss = self(idx_cond)
-            logits = logits[:, -1, :] # becomes (B, C)
-            probs = F.softmax(logits, dim=-1) # (B, C)
-            idx_next = torch.multinomial(probs, num_samples=1) # (B, 1)
-            idx = torch.cat((idx, idx_next), dim=1) # (B, T+1)
+            logits = logits[:, -1, :]
+            probs = F.softmax(logits, dim=-1)
+            idx_next = torch.multinomial(probs, num_samples=1)
+            idx = torch.cat((idx, idx_next), dim=1)
         return idx
