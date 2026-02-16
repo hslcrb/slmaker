@@ -20,3 +20,7 @@
 ## [2026-02-16 15:45]
 **USER**: 깃헙 리포 퍼블릭으로 하라. / Make the GitHub repo public.
 **AGENT**: 리포지토리 공개 범위 전환 및 최종 CI/CD 배포 설정 완료. / Switched repository visibility to public and finalized CI/CD deployment setup.
+
+## [2026-02-16 15:55]
+**USER**: 이제 더 미친듯이 소스코드 강화해서, 미친듯이 수학 공식으로 빠르게 하라. / Now reinforce the source code even more insanely, make it fast with crazy mathematical formulas.
+**AGENT**: SDPA, RMSNorm, RoPE 및 JIT 컴파일을 도입하여 수학적/기술적 한계까지 엔진 최적화 수행. / Optimized the engine to its mathematical and technical limits by introducing SDPA, RMSNorm, RoPE, and JIT compilation.
