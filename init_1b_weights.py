@@ -5,27 +5,18 @@ import os
 n_embd = 2048
 n_layer = 24
 n_head = 16
-vocab_size = 80 # Default for character-level TinyStories
+vocab_size = 257 # Fixed for Byte-level + EOT
 
-# Try to get from data
-try:
-    with open('data/tinystories.txt', 'r', encoding='utf-8') as f:
-        text = f.read(100000) # Check first 100k chars for vocab
-    from tokenizer import Tokenizer
-    t = Tokenizer(text)
-    vocab_size = t.vocab_size
-    print(f"Detected Vocab Size: {vocab_size}")
-except Exception as e:
-    print(f"Using default vocab_size: {vocab_size} due to {e}")
+print(f"Universal Vocab Size: {vocab_size}")
 
 # Create data/weights directory if not exists
 os.makedirs('data/weights', exist_ok=True)
 
 def create_mmap_weight(name, shape):
     path = f'data/weights/{name}.bin'
+    # Always overwrite for clean upgrade / 클린 업그레이드를 위해 항상 덮어쓰기
     if os.path.exists(path):
-        print(f"Skipping {path} (already exists)")
-        return path
+        os.remove(path)
     
     print(f"Creating {path} with shape {shape} (~{np.prod(shape)*4/1e6:.2f} MB)")
     # Initialize on disk to avoid RAM usage

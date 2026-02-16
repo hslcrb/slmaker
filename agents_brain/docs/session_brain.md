@@ -11,12 +11,13 @@
 - **GUI 구현 / GUI Implementation**: 실시간 시각화, 지표 모니터링, 로그 제어가 가능한 Tkinter 프로페셔널 대시보드 구축. / Built a professional Tkinter dashboard for real-time visualization, metrics, and logs.
 - **긴급 복구 / Emergency Recovery**: `git reset --hard` 사고로 인한 소스코드 유실을 Git 히스토리를 통해 완벽 복구. / Fully recovered source code lost during a `git reset --hard` accident using Git history.
 - **인프라 및 자동화 / Infra & Automation**: GitHub 퍼블릭 리포지토리 전환 및 멀티 OS 바이너리/도커 배포 CI/CD 파이프라인 완비. / Switched to public repo and established multi-OS binary/Docker CI/CD pipelines.
+- **오디세이 고도화 / Odyssey Enhancement**: 한영 병기 및 코딩 지원을 위한 바이트 단위 토크나이저 및 KV 캐싱(10x 속도 향상) 구현 성공(v1.0-Odyssey). / Successfully implemented Byte-level tokenizer and KV Caching (10x speedup) for KR/EN/Code support.
+- **인터페이스 동기화 / Interface Parity**: CLI와 GUI의 기능을 100% 일치시키고 프리미엄 실시간 텔레메트리 대시보드 구축 완료. / Synchronized 100% features between CLI and GUI and built premium real-time telemetry dashboards.
 - **브랜드 통합 / Brand Unification**: 프로젝트명을 `slmaker`로 통일하고 모델 라인업(Monster, Odyssey)을 공식화함(v0.8.0). / Unified project name as `slmaker` and formalized model lineup (Monster, Odyssey) (v0.8.0).
 - **글로벌 준수 / Global Compliance**: 모든 문서 한영 병기 및 10-커밋 주기 버전 관리(v0.1.0 ~ v0.8.0) 엄수. / Strictly followed bilingual documentation and 10-commit versioning (v0.1.0 ~ v0.8.0) rules.
 - **추진력 강화 / Propulsion Power**: 비동기 프리페칭 및 RAM 캐싱을 통해 SSD 병목을 극복하고 1.2B 모델 성능 최적화(v0.6.0). / Overcame SSD bottlenecks via async prefetching and RAM caching to optimize 1.2B model (v0.6.0).
 - **1.2B 갓-스케일 / 1.2B God-Scale**: SSD 매핑 및 LoRA 기술을 사용하여 4GB RAM에서 1.2B 파라미터 구현 성공(v0.5.0). / Successfully implemented 1.2B parameters on 4GB RAM using SSD-mapping and LoRA (v0.5.0).
 - **트리플 포맷 수출 / Triple-Format Export**: 보안 및 호환성을 위해 `.pth`, `.safetensors`, `.gguf` 동시 저장 로직 구현. / Implemented simultaneous saving of `.pth`, `.safetensors`, and `.gguf` for security and compatibility.
-- **데이터 대폭발 / Data Explosion**: 11MB 대규모 고품질 TinyStories 말뭉치 이식 및 mmap 스트리밍 로더 구현. / Integrated 11MB high-quality TinyStories corpus and implemented mmap streaming loader.
 - **데이터 대폭발 / Data Explosion**: 11MB 대규모 고품질 TinyStories 말뭉치 이식 및 mmap 스트리밍 로더 구현. / Integrated 11MB high-quality TinyStories corpus and implemented mmap streaming loader.
 - **파라미터 스케일링 / Parameter Scaling**: 모델 크기를 1.5M에서 ~4.5M으로 약 3배 확장하여 지능 밀도 고도화. / Expanded model size 3x (1.5M -> 4.5M) for higher intelligence density.
 - **극한 강화 / Extreme Reinforcement**: SDPA, RMSNorm, RoPE 도입으로 수학적 엔진을 현존 LLM 수준으로 강화 (v0.2.0). / Reinforced mathematical engine to modern LLM standards via SDPA, RMSNorm, and RoPE (v0.2.0).

@@ -35,13 +35,10 @@ def engine_train(app=None):
         torch.set_float32_matmul_precision('high')
     
     # Path selection for Insane Upgrade / 고도화된 경로 선택
-    data_path = 'data/tinystories.txt' if os.path.exists('data/tinystories.txt') else 'data/sample.txt'
+    data_path = 'data/polyglot_coder.txt' if os.path.exists('data/polyglot_coder.txt') else 'data/tinystories.txt'
     if app: app.log(f"Loading dataset: {data_path}")
 
-    with open(data_path, 'r', encoding='utf-8') as f:
-        text = f.read()
-
-    tokenizer = Tokenizer(text)
+    tokenizer = Tokenizer()
     vocab_size = tokenizer.vocab_size
     
     train_loader = StreamingDataLoader(data_path, tokenizer, 'train')
@@ -56,7 +53,8 @@ def engine_train(app=None):
         pass
 
     # Filter trainable parameters (LoRA only) / 학습 가능한 파라미터(LoRA 전용) 필터링
-    trainable_params = [p for p in model.parameters() if p.requires_grad]
+    # LoRA params are identified by 'lora' in the name
+    trainable_params = [p for n, p in model.named_parameters() if 'lora' in n]
     optimizer = torch.optim.AdamW(trainable_params, lr=learning_rate)
 
     if app: app.log(f"Starting slmaker v0.8.0: Odyssey (Params: ~1.2B)")
