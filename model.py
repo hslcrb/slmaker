@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.nn import functional as F
 import math
 
-# Mathematical Hyperparameters / 수학적 하이퍼파라미터
+# General Hyperparameters / 일반 하이퍼파라미터
 batch_size = 1 # Keep it 1 for 4GB RAM / 4GB RAM 유지를 위해 1로 고정
 block_size = 64 # Context length
 max_iters = 5000
@@ -11,14 +11,25 @@ eval_interval = 500
 learning_rate = 3e-4
 device = 'cpu'
 eval_iters = 200
-# Odyssey Config for 1B-Monster (v0.5.0)
-# 이 설정은 약 12억(1.2B) 개의 파라미터를 생성하며, SSD 매핑 없이는 4GB RAM에서 구동이 불가능합니다.
-# This config generates ~1.2B parameters, which cannot run on 4GB RAM without SSD-mapping.
-n_embd = 2048 
-n_head = 16   
-n_layer = 24  
 dropout = 0.1
-# Total Params: ~1,250,000,000 (1.25B)
+
+# Model Lineup Selection / 모델 라인업 선택
+# 'Monster': 4.5M Lite (RAM-only target)
+# 'Odyssey': 1.2B Pro (SSD-mapped, LoRA target)
+MODEL_TYPE = 'Odyssey' 
+
+if MODEL_TYPE == 'Monster':
+    # 🚀 Monster Config (v0.3.0/v1.0-Lite)
+    # 4.5M parameters, extremely fast on any CPU.
+    n_embd = 384
+    n_head = 6
+    n_layer = 6
+else:
+    # 🌌 Odyssey Config (v1.0-Pro)
+    # 1.2B parameters, utilizes SSD-mapping and RoPE/RMSNorm.
+    n_embd = 2048 
+    n_head = 16   
+    n_layer = 24  
 
 import numpy as np
 import os

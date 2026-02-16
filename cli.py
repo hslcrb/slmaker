@@ -8,7 +8,7 @@ from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
 import queue
 import threading
 from train import engine_train
-from model import n_embd, n_head, n_layer
+from model import n_embd, n_head, n_layer, MODEL_TYPE
 
 console = Console()
 
@@ -54,10 +54,10 @@ class NanoSLMCLI:
         
         table.add_row("Target Device", "CPU (Optimized)")
         table.add_row("Memory Limit", "4GB RAM")
-        table.add_row("Model Type", "Odyssey (1.2B)")
+        table.add_row("Active Model", f"[bold yellow]{MODEL_TYPE}[/]")
         table.add_row("Architecture", "Transformer + LoRA")
-        table.add_row("Embed / Heads", f"{n_embd} / {n_head}")
-        table.add_row("Layers", str(n_layer))
+        table.add_row("Embed / Heads", f"{n_embd} / {n_head} ({'Lite' if MODEL_TYPE == 'Monster' else 'Pro'})")
+        table.add_row("Layers", f"{n_layer} ({'Fast' if MODEL_TYPE == 'Monster' else 'Deep'})")
         return table
 
     def run_inference(self, prompt, max_tokens=100):

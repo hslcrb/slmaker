@@ -57,7 +57,8 @@ def engine_train(app=None):
     trainable_params = [p for n, p in model.named_parameters() if 'lora' in n]
     optimizer = torch.optim.AdamW(trainable_params, lr=learning_rate)
 
-    if app: app.log(f"Starting slmaker v0.8.0: Odyssey (Params: ~1.2B)")
+    from model import MODEL_TYPE
+    if app: app.log(f"Starting slmaker v0.8.0: {MODEL_TYPE} (n_layer: {n_layer})")
     
     start_time = time.time()
     for iter in range(max_iters):

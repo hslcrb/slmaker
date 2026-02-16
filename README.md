@@ -85,3 +85,24 @@ graph TD
 - **`data/weights/`**: **Odyssey (1.2B) 모델 가중치**. `np.memmap`을 통해 SSD에 직접 매핑되어 RAM 점유를 최소화합니다.
 
 ---
+
+---
+
+## 🚀 모델 라인업 전환 가이드 / Model Lineup Switching Guide
+
+slmaker는 사양에 따라 두 가지 엔진을 제공합니다. `model.py` 상단의 `MODEL_TYPE` 변수를 수정하여 전환할 수 있습니다. / slmaker offers two engines based on specs. Switch by modifying the `MODEL_TYPE` variable at the top of `model.py`.
+
+1. **Monster (4.5M Lite)**: 
+   - **용도**: 초고속 학습 및 추론, 데모용. / Ultra-fast training & inference, for demos.
+   - **장점**: 4.5M 파라미터로 어떤 CPU에서도 지연 없이 동작. / 4.5M params, zero latency on any CPU.
+   - **설정**: `MODEL_TYPE = 'Monster'`
+
+2. **Odyssey (1.2B Pro)**:
+   - **용도**: 본격적인 언어 지능 실험, 한/영/코드 지원. / Serious LLM experiments, KR/EN/Code support.
+   - **장점**: 1.2B 파라미터, SSD 매핑 기술로 4GB RAM에서 구동 가능. / 1.2B params, runs on 4GB RAM via SSD-mapping.
+   - **설정**: `MODEL_TYPE = 'Odyssey'`
+
+> [!IMPORTANT]
+> 모델 전환 시 가중치 구조가 변경되므로 기존 학습 데이터(`.pth` 등)는 호환되지 않을 수 있습니다. / Switching models changes weight structure; existing weights may not be compatible.
+
+---

@@ -52,11 +52,12 @@ class NanoSLMGUI:
         specs_group = tk.LabelFrame(left_panel, text=" SYSTEM SPECS / 시스템 사양 ", bg='#1e1e1e', fg='#00ffcc', font=("Inter", 10, "bold"))
         specs_group.pack(fill=tk.X, pady=10)
         
+        from model import MODEL_TYPE
         specs = [
             ("Target Device:", "CPU (Optimized)"),
             ("Memory Limit:", "4GB RAM"),
-            ("Model Type:", "Decoder-only Transformer"),
-            ("Parameters:", "~1.2B"),
+            ("Active Model:", f"{MODEL_TYPE} ({'Lite' if MODEL_TYPE == 'Monster' else 'Pro'})"),
+            ("Architecture:", "Transformer + LoRA"),
             ("Embed Dim:", str(n_embd)),
             ("Heads/Layers:", f"{n_head} / {n_layer}")
         ]
@@ -176,7 +177,8 @@ class NanoSLMGUI:
         self.res_area.pack(fill=tk.BOTH, expand=True, padx=20, pady=5)
         self.res_area.config(state=tk.DISABLED)
 
-        self.info_label = ttk.Label(right_panel, text="slmaker v1.0.0 (Odyssey) | Full Training & Inference | Dual-Interface", 
+        from model import MODEL_TYPE
+        self.info_label = ttk.Label(right_panel, text=f"slmaker v1.0.0 ({MODEL_TYPE}) | Full Training & Inference | Dual-Interface", 
 style="TLabel")
         self.info_label.pack(pady=(10, 0))
 
