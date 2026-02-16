@@ -52,3 +52,36 @@ pip install -r requirements.txt
 
 ---
 "조악한 품질은 허용하지 않습니다. 완벽을 넘어선 상품을 매 순간 증명합니다." - Antigravity Gemini
+
+---
+
+## 📂 프로젝트 구조 / Project Structure
+
+```mermaid
+graph TD
+    Root["slmaker (v1.0.0)"] --> Core["Core Logic"]
+    Root --> UI["Interface"]
+    Root --> Data["Data & Weights"]
+
+    Core --> M["model.py (Transformer)"]
+    Core --> T["train.py (Engine)"]
+    Core --> TK["tokenizer.py (Byte-level)"]
+
+    UI --> GUI["gui.py (Dashboard)"]
+    UI --> CLI["cli.py (TUI Engine)"]
+    UI --> SH["run.sh / run_cli.sh"]
+
+    Data --> W["data/weights/ (Odyssey 1.2B)"]
+    Data --> TXT["data/*.txt (Corpus)"]
+    
+    W --> BIN["*.bin (Disk-mapped weights)"]
+```
+
+### 📁 주요 구성 요소 설명 / Component Overview
+- **`model.py`**: Odyssey(1.2B) 및 Monster 아키텍처 핵심 코드. SSD 매핑(`MmapLinear`) 기술 내장.
+- **`train.py`**: 학습 엔진 및 KV 캐싱 기반 추론 로직 통합.
+- **`tokenizer.py`**: v1.0 바이트 단위 잠재 토크나이저 (한/영/코드 최적화).
+- **`gui.py` / `cli.py`**: 실시간 텔레메트리 대시보드 및 추론 인터페이스.
+- **`data/weights/`**: **Odyssey (1.2B) 모델 가중치**. `np.memmap`을 통해 SSD에 직접 매핑되어 RAM 점유를 최소화합니다.
+
+---
